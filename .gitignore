@@ -160,3 +160,7 @@ dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/timing.properties
 .mvn/wrapper/maven-wrapper.jar
+
+### gradle 
+gradlew
+gradlew.bat
