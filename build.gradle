@@ -1,0 +1,79 @@
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+        mavenLocal()
+        mavenCentral()
+        maven { url "https://jcenter.bintray.com" }
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+    }
+    dependencies {
+        classpath "com.github.jengelman.gradle.plugins:shadow:$gradleShadowPlugin"
+        classpath "io.spring.gradle:dependency-management-plugin:$springDependencyPlugin"
+    }
+}
+
+repositories {
+    mavenLocal()
+    jcenter()
+}
+
+version "$projectVersion"
+group "com.mikerusoft"
+
+apply plugin: "java"
+apply plugin: "io.spring.dependency-management"
+apply plugin: "application"
+apply plugin: "com.github.johnrengelman.shadow"
+
+shadowJar {
+    mergeServiceFiles()
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "io.micronaut:micronaut-bom:$micronautVersion"
+    }
+}
+
+dependencies {
+    compileOnly "org.projectlombok:lombok:$lombokVersion"
+
+    annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+    annotationProcessor "io.micronaut:micronaut-inject-java"
+    annotationProcessor "io.micronaut:micronaut-validation"
+
+    compile "io.micronaut:micronaut-inject"
+    compile "io.micronaut:micronaut-validation"
+    compile "io.micronaut:micronaut-runtime"
+    compile "io.micronaut:micronaut-http-client"
+    compile "io.micronaut:micronaut-http-server-netty"
+
+    runtime "io.micronaut:micronaut-management"
+    runtime "ch.qos.logback:logback-classic:$logbackVersion"
+
+    testAnnotationProcessor "io.micronaut:micronaut-inject-java"
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
+}
+
+test {
+    useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile){
+    options.encoding = "UTF-8"
+    options.compilerArgs.add('-parameters')
+}
+
+shadowJar {
+    mergeServiceFiles()
+}
+
+run.jvmArgs('-noverify', '-XX:TieredStopAtLevel=1', '-Dcom.sun.management.jmxremote')
+
+/*application {
+    mainClassName = 'org.gradle.sample.Main'
+}*/
