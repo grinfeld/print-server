@@ -1,7 +1,7 @@
 package com.mikerusoft.print.server;
 
 import com.mikerusoft.print.server.model.RequestWrapper;
-import com.mikerusoft.print.server.services.MultiPublisherService;
+import com.mikerusoft.print.server.services.RedirectService;
 import com.mikerusoft.print.server.utils.Pair;
 import io.micronaut.http.*;
 import io.micronaut.http.annotation.*;
@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -19,30 +20,30 @@ import static io.micronaut.http.HttpResponse.ok;
 @Slf4j
 public class EndpointController {
 
-    private MultiPublisherService<RequestWrapper> service;
+    private RedirectService<RequestWrapper> service;
 
     @Inject
-    public EndpointController(MultiPublisherService<RequestWrapper> service) {
+    public EndpointController(RedirectService<RequestWrapper> service) {
         this.service = service;
     }
 
-    @Get("/get")
+    @Get("/{/get:.*}")
     @Consumes(MediaType.ALL)
-    public HttpResponse<String> getMethod(HttpRequest<?> request) {
+    public HttpResponse getMethod(HttpRequest<?> request, Optional<String> get) {
         service.emit(extractRequest(request));
         return ok();
     }
 
-    @Post("/post")
+    @Post("/{/post:.*}")
     @Consumes(MediaType.ALL)
-    public HttpResponse<String> postMethod(HttpRequest<?> request) {
+    public HttpResponse postMethod(HttpRequest<?> request, Optional<String> post) {
         service.emit(extractRequest(request));
         return ok();
     }
 
-    @Put("/put")
+    @Put("/{/put:.*}")
     @Consumes(MediaType.ALL)
-    public HttpResponse<String> putMethod(HttpRequest<?> request) {
+    public HttpResponse putMethod(HttpRequest<?> request, Optional<String> put) {
         service.emit(extractRequest(request));
         return ok();
     }
@@ -54,7 +55,7 @@ public class EndpointController {
 
         return RequestWrapper.builder().headers(headers).queryParams(queryParams)
                 .cookies(cookies).method(request.getMethod().name())
-                .uri(request.getUri().toString()).body(request.getBody().map(String::valueOf).orElse(null))
+                .uri(request.getUri().getPath()).body(request.getBody().map(String::valueOf).orElse(null))
             .build();
     }
 
