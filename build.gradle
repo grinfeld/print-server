@@ -14,6 +14,10 @@ buildscript {
     }
 }
 
+plugins {
+    id "net.ltgt.apt" version "0.18" // <1>
+}
+
 repositories {
     mavenLocal()
     jcenter()
@@ -50,6 +54,7 @@ dependencies {
     compile "io.micronaut:micronaut-http-client"
     compile "io.micronaut:micronaut-http-server-netty"
 
+    runtime "io.micronaut:micronaut-core:$micronautVersion"
     runtime "io.micronaut:micronaut-management"
     runtime "ch.qos.logback:logback-classic:$logbackVersion"
 
