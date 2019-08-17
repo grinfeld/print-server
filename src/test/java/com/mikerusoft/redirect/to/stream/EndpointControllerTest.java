@@ -1,7 +1,7 @@
-package com.mikerusoft.print.server;
+package com.mikerusoft.redirect.to.stream;
 
-import com.mikerusoft.print.server.model.RequestWrapper;
-import com.mikerusoft.print.server.services.RedirectService;
+import com.mikerusoft.redirect.to.stream.model.RequestWrapper;
+import com.mikerusoft.redirect.to.stream.services.RedirectService;
 import io.micronaut.http.*;
 import io.micronaut.http.client.RxHttpClient;
 import io.micronaut.http.client.annotation.Client;
@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.mikerusoft.print.server.EndpointControllerTest.Assertions.*;
+import static com.mikerusoft.redirect.to.stream.EndpointControllerTest.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;

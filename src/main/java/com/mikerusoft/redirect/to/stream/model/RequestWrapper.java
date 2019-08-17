@@ -1,4 +1,4 @@
-package com.mikerusoft.print.server.model;
+package com.mikerusoft.redirect.to.stream.model;
 
 import lombok.Builder;
 import lombok.Data;

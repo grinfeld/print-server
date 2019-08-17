@@ -1,8 +1,8 @@
-package com.mikerusoft.print.server;
+package com.mikerusoft.redirect.to.stream;
 
-import com.mikerusoft.print.server.model.RequestWrapper;
-import com.mikerusoft.print.server.services.RedirectService;
-import com.mikerusoft.print.server.utils.Pair;
+import com.mikerusoft.redirect.to.stream.model.RequestWrapper;
+import com.mikerusoft.redirect.to.stream.services.RedirectService;
+import com.mikerusoft.redirect.to.stream.utils.Pair;
 import io.micronaut.http.*;
 import io.micronaut.http.annotation.*;
 import lombok.extern.slf4j.Slf4j;
