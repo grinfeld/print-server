@@ -1,4 +1,4 @@
-package com.mikerusoft.redirect.to.stream;
+package com.mikerusoft.redirect.to.stream.receiver;
 
 import com.mikerusoft.redirect.to.stream.model.RequestWrapper;
 import com.mikerusoft.redirect.to.stream.services.RedirectService;
@@ -18,12 +18,12 @@ import static io.micronaut.http.HttpResponse.ok;
 
 @Controller
 @Slf4j
-public class EndpointController {
+public class ReceiveDataController {
 
     private RedirectService<RequestWrapper> service;
 
     @Inject
-    public EndpointController(RedirectService<RequestWrapper> service) {
+    public ReceiveDataController(RedirectService<RequestWrapper> service) {
         this.service = service;
     }
 
