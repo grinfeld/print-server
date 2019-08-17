@@ -27,35 +27,36 @@ public class EndpointController {
         this.service = service;
     }
 
-    @Get("/{/get:.*}")
+    @Get("/{/get:.*}") // kombina - I didn't find the better way to give only prefix to receive all sub URIs
     @Consumes(MediaType.ALL)
     public HttpResponse getMethod(HttpRequest<?> request, Optional<String> get) {
-        service.emit(extractRequest(request));
+        service.emit(extractRequest(request, null));
         return ok();
     }
 
     @Post("/{/post:.*}")
     @Consumes(MediaType.ALL)
-    public HttpResponse postMethod(HttpRequest<?> request, Optional<String> post) {
-        service.emit(extractRequest(request));
+    public HttpResponse postMethod(HttpRequest<?> request, Optional<String> post, @Body String body) {
+        service.emit(extractRequest(request, body));
         return ok();
     }
 
     @Put("/{/put:.*}")
     @Consumes(MediaType.ALL)
-    public HttpResponse putMethod(HttpRequest<?> request, Optional<String> put) {
-        service.emit(extractRequest(request));
+    public HttpResponse putMethod(HttpRequest<?> request, Optional<String> put, @Body String body) {
+        service.emit(extractRequest(request, body));
         return ok();
     }
 
-    private static RequestWrapper extractRequest(HttpRequest<?> request) {
+    private static RequestWrapper extractRequest(HttpRequest<?> request, String body) {
         Map<String, List<String>> headers = extractHeaders(request.getHeaders());
         Map<String, List<String>> queryParams = extractQueryParams(request.getParameters());
         Map<String, String> cookies = extractCookies(request);
 
         return RequestWrapper.builder().headers(headers).queryParams(queryParams)
                 .cookies(cookies).method(request.getMethod().name())
-                .uri(request.getUri().getPath()).body(request.getBody().map(String::valueOf).orElse(null))
+                .uri(request.getUri().getPath())
+                .body(body)
             .build();
     }
 
