@@ -27,7 +27,7 @@ public class PublishDataController {
 
     @Get(value = "/all", processes = MediaType.APPLICATION_JSON_STREAM)
     public Flowable<RequestWrapper> getAllRequests() {
-        return Flowable.fromPublisher(service);
+        return Flowable.fromPublisher(service.getPublisher());
     }
 
     @Post(value = "/filter",
@@ -37,7 +37,7 @@ public class PublishDataController {
     public Flowable<RequestWrapper> getFilteredRequests(@Body FilterRequest req) {
         if (req == null)
             return getAllRequests();
-        return Flowable.fromPublisher(service)
+        return Flowable.fromPublisher(service.getPublisher())
             .filter(e -> filterByMethod(e.getMethod(), req.getForMethod()))
             .filter(e -> filterByUri(e.getUri(), req.getForUri()))
             .filter(e -> filterByQueryParams(e.getQueryParams(), req.getForQueryParams()))

@@ -1,8 +1,8 @@
 package com.mikerusoft.redirect.to.stream.services;
 
-import com.mikerusoft.redirect.to.stream.model.RequestWrapper;
 import org.reactivestreams.Publisher;
 
-public interface RedirectService<T> extends Publisher<RequestWrapper> {
+public interface RedirectService<T> {
     void emit(T element);
+    Publisher<T> getPublisher();
 }
