@@ -5,15 +5,13 @@ import io.micronaut.test.annotation.MicronautTest;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import io.reactivex.FlowableOnSubscribe;
+import io.reactivex.subscribers.TestSubscriber;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
 import javax.inject.Inject;
 
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @MicronautTest
 class RedirectPublisherTest {
@@ -22,17 +20,58 @@ class RedirectPublisherTest {
     private RedirectService<RequestWrapper, FlowableOnSubscribe<RequestWrapper>> service;
 
     @Test
-    @Timeout(value = 300L, unit = TimeUnit.MILLISECONDS)
+    @Timeout(value = 100L, unit = TimeUnit.MILLISECONDS)
     void when1EventEmitted_expected1Event() throws Exception {
         Flowable<RequestWrapper> retrieve = Flowable.create(service.subscriber(), BackpressureStrategy.BUFFER);
-        Executors.newSingleThreadScheduledExecutor().schedule(() -> {
-            service.emit(RequestWrapper.builder().method("GET").uri("/bla/bla").build());
-        }, 100, TimeUnit.MILLISECONDS);
-        RequestWrapper requestWrapper = retrieve.blockingFirst();
-        assertThat(requestWrapper).isNotNull()
-            .hasFieldOrPropertyWithValue("method", "GET")
-            .hasFieldOrPropertyWithValue("uri", "/bla/bla")
-        ;
+        TestSubscriber<RequestWrapper> expected = retrieve.test();
+
+        service.emit(RequestWrapper.builder().method("GET").uri("/bla/bla").build());
+
+        expected.assertSubscribed();
+        expected.assertNoErrors();
+        expected.assertValueCount(1);
+        expected.assertValues(RequestWrapper.builder().method("GET").uri("/bla/bla").build());
     }
 
+    @Test
+    @Timeout(value = 100L, unit = TimeUnit.MILLISECONDS)
+    void when2EventsEmitted_expected2Events() throws Exception {
+        Flowable<RequestWrapper> retrieve = Flowable.create(service.subscriber(), BackpressureStrategy.BUFFER);
+        TestSubscriber<RequestWrapper> expected = retrieve.test();
+
+        service.emit(RequestWrapper.builder().method("GET").uri("/for/get").build());
+        service.emit(RequestWrapper.builder().method("POST").uri("/for/post").build());
+
+        expected.assertSubscribed();
+        expected.assertNoErrors();
+        expected.assertValueCount(2);
+        expected.assertValues(
+            RequestWrapper.builder().method("GET").uri("/for/get").build(),
+            RequestWrapper.builder().method("POST").uri("/for/post").build()
+        );
+    }
+
+    @Test
+    @Timeout(value = 100L, unit = TimeUnit.MILLISECONDS)
+    void withoutSleep_whenNoEventsEmitted_expectedEmptyResult() throws Exception {
+        Flowable<RequestWrapper> retrieve = Flowable.create(service.subscriber(), BackpressureStrategy.BUFFER);
+        TestSubscriber<RequestWrapper> expected = retrieve.test();
+
+        expected.assertSubscribed();
+        expected.assertNoErrors();
+        expected.assertEmpty();
+    }
+
+    @Test
+    @Timeout(value = 200L, unit = TimeUnit.MILLISECONDS)
+    void withSleep_whenNoEventsEmitted_expectedEmptyResult() throws Exception {
+        Flowable<RequestWrapper> retrieve = Flowable.create(service.subscriber(), BackpressureStrategy.BUFFER);
+        TestSubscriber<RequestWrapper> expected = retrieve.test();
+
+        Thread.sleep(100L); // let's sleep, to ensure that nothing happens
+
+        expected.assertSubscribed();
+        expected.assertNoErrors();
+        expected.assertEmpty();
+    }
 }

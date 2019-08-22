@@ -11,8 +11,6 @@ public class RedirectPublisher implements RedirectService<RequestWrapper, Flowab
 
     private FlowableEmitter<RequestWrapper> emitter;
 
-    public RedirectPublisher() {}
-
     @Override
     public void emit(RequestWrapper element) {
         if (emitter != null)
@@ -28,4 +26,6 @@ public class RedirectPublisher implements RedirectService<RequestWrapper, Flowab
     public void subscribe(FlowableEmitter<RequestWrapper> emitter) throws Exception {
         this.emitter = emitter;
     }
+
+    // todo: add cancel - at least for shutdown hook
 }
