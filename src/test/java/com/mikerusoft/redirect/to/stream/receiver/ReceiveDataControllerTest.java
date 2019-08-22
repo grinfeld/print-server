@@ -7,6 +7,7 @@ import io.micronaut.http.client.RxHttpClient;
 import io.micronaut.http.client.annotation.Client;
 import io.micronaut.test.annotation.MicronautTest;
 import io.micronaut.test.annotation.MockBean;
+import io.reactivex.FlowableOnSubscribe;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -34,10 +35,10 @@ class ReceiveDataControllerTest {
     private RxHttpClient client;
 
     @Inject
-    private RedirectService<RequestWrapper> service;
+    private RedirectService<RequestWrapper, FlowableOnSubscribe<RequestWrapper>> service;
 
     @MockBean(RedirectService.class)
-    RedirectService<String> service() {
+    RedirectService<String, FlowableOnSubscribe<RequestWrapper>> service() {
         return mock(RedirectService.class);
     }
 

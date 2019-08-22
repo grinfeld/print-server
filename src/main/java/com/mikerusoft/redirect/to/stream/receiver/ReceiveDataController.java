@@ -5,6 +5,7 @@ import com.mikerusoft.redirect.to.stream.services.RedirectService;
 import com.mikerusoft.redirect.to.stream.utils.Pair;
 import io.micronaut.http.*;
 import io.micronaut.http.annotation.*;
+import io.reactivex.FlowableOnSubscribe;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
@@ -20,10 +21,10 @@ import static io.micronaut.http.HttpResponse.ok;
 @Slf4j
 public class ReceiveDataController {
 
-    private RedirectService<RequestWrapper> service;
+    private RedirectService<RequestWrapper, FlowableOnSubscribe<RequestWrapper>> service;
 
     @Inject
-    public ReceiveDataController(RedirectService<RequestWrapper> service) {
+    public ReceiveDataController(RedirectService<RequestWrapper, FlowableOnSubscribe<RequestWrapper>> service) {
         this.service = service;
     }
 

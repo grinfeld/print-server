@@ -9,7 +9,9 @@ import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
+import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
+import io.reactivex.FlowableOnSubscribe;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -18,16 +20,16 @@ import java.util.Map;
 @Controller
 public class PublishDataController {
 
-    private RedirectService<RequestWrapper> service;
+    private RedirectService<RequestWrapper, FlowableOnSubscribe<RequestWrapper>> service;
 
     @Inject
-    public PublishDataController(RedirectService<RequestWrapper> service) {
+    public PublishDataController(RedirectService<RequestWrapper, FlowableOnSubscribe<RequestWrapper>> service) {
         this.service = service;
     }
 
     @Get(value = "/all", processes = MediaType.APPLICATION_JSON_STREAM)
     public Flowable<RequestWrapper> getAllRequests() {
-        return Flowable.fromPublisher(service.getPublisher());
+        return Flowable.create(service.subscriber(), BackpressureStrategy.BUFFER);
     }
 
     @Post(value = "/filter",
@@ -37,7 +39,7 @@ public class PublishDataController {
     public Flowable<RequestWrapper> getFilteredRequests(@Body FilterRequest req) {
         if (req == null)
             return getAllRequests();
-        return Flowable.fromPublisher(service.getPublisher())
+        return Flowable.create(service.subscriber(), BackpressureStrategy.BUFFER)
             .filter(e -> filterByMethod(e.getMethod(), req.getForMethod()))
             .filter(e -> filterByUri(e.getUri(), req.getForUri()))
             .filter(e -> filterByQueryParams(e.getQueryParams(), req.getForQueryParams()))

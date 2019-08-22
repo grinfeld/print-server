@@ -1,8 +1,6 @@
 package com.mikerusoft.redirect.to.stream.services;
 
-import org.reactivestreams.Publisher;
-
-public interface RedirectService<T> {
+public interface RedirectService<T, F> {
     void emit(T element);
-    Publisher<T> getPublisher();
+    F subscriber();
 }

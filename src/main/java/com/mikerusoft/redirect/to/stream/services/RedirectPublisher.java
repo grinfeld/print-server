@@ -1,33 +1,31 @@
 package com.mikerusoft.redirect.to.stream.services;
 
 import com.mikerusoft.redirect.to.stream.model.RequestWrapper;
-import io.reactivex.processors.AsyncProcessor;
-import org.reactivestreams.Publisher;
-import org.reactivestreams.Subscriber;
+import io.reactivex.FlowableEmitter;
+import io.reactivex.FlowableOnSubscribe;
 
 import javax.inject.Singleton;
 
 @Singleton
-public class RedirectPublisher implements RedirectService<RequestWrapper>, Publisher<RequestWrapper> {
+public class RedirectPublisher implements RedirectService<RequestWrapper, FlowableOnSubscribe<RequestWrapper>>, FlowableOnSubscribe<RequestWrapper> {
 
-    private AsyncProcessor<RequestWrapper> processor;
+    private FlowableEmitter<RequestWrapper> emitter;
 
-    public RedirectPublisher() {
-        processor = AsyncProcessor.create();
-    }
+    public RedirectPublisher() {}
 
     @Override
     public void emit(RequestWrapper element) {
-        processor.onNext(element);
+        if (emitter != null)
+            emitter.onNext(element);
     }
 
     @Override
-    public Publisher<RequestWrapper> getPublisher() {
+    public FlowableOnSubscribe<RequestWrapper> subscriber() {
         return this;
     }
 
     @Override
-    public void subscribe(Subscriber<? super RequestWrapper> s) {
-        processor.subscribe(s);
+    public void subscribe(FlowableEmitter<RequestWrapper> emitter) throws Exception {
+        this.emitter = emitter;
     }
 }
