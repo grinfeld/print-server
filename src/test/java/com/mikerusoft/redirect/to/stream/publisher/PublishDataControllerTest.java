@@ -5,6 +5,7 @@ import com.mikerusoft.redirect.to.stream.services.RedirectService;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.client.RxHttpClient;
+import io.micronaut.http.client.RxStreamingHttpClient;
 import io.micronaut.http.client.annotation.Client;
 import io.micronaut.test.annotation.MicronautTest;
 import io.reactivex.Flowable;
@@ -26,7 +27,7 @@ class PublishDataControllerTest {
 
     @Inject
     @Client("/")
-    RxHttpClient client;
+    RxStreamingHttpClient client;
 
     @Test
     void whenNothingPublished_expectedEmpty() {
@@ -34,20 +35,15 @@ class PublishDataControllerTest {
     }
 
     @Test
-    void when1RequestPublished_expectedOneResponse() {
-        Flowable<RequestWrapper> retrieve = client.retrieve(HttpRequest.GET("/retrieve/uri/somepath").contentType(MediaType.APPLICATION_JSON_STREAM_TYPE), RequestWrapper.class);
-        Executors.newSingleThreadExecutor().execute(() -> {
-            while(true) {
-                service.emit(RequestWrapper.builder().method("GET").uri("somepath").build());
-                try {
-                    Thread.sleep(100L);
-                }catch (Exception ignore){}
-            }
-        });
+    void when1RequestPublished_expectedOneResponse() throws Exception {
+        Flowable<RequestWrapper> retrieve = client.jsonStream(HttpRequest.GET("/retrieve/all"), RequestWrapper.class);
+        
+        Thread.sleep(300L);
 
-        //TestSubscriber<RequestWrapper> test = retrieve.test();
-        RequestWrapper requestWrapper = retrieve.blockingFirst();//.assertValueCount(1).assertValues(RequestWrapper.builder().method("GET").uri("somepath").build());
-        System.out.println();
+        service.emit(RequestWrapper.builder().method("GET").uri("somepath").build());
+
+        TestSubscriber<RequestWrapper> test = retrieve.test();
+        test.assertValueCount(1).assertValues(RequestWrapper.builder().method("GET").uri("somepath").build());
     }
 
 }

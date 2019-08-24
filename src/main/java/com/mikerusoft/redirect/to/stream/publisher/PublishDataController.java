@@ -6,9 +6,11 @@ import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.reactivex.Flowable;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
 
+@Slf4j
 @Controller("/retrieve")
 public class PublishDataController {
 
@@ -21,41 +23,36 @@ public class PublishDataController {
 
     @Get(value = "/all", processes = MediaType.APPLICATION_JSON_STREAM)
     public Flowable<RequestWrapper> getAllRequests() {
-        return service.subscriber();
+        return getFlowable();
     }
 
-    @Get(value = "/uri/{uri}",
-        produces = MediaType.APPLICATION_JSON_STREAM,
-        processes = {MediaType.APPLICATION_JSON, MediaType.TEXT_JSON, MediaType.APPLICATION_JSON_STREAM}
-    )
+    @Get(value = "/uri/{uri}", produces = MediaType.APPLICATION_JSON_STREAM)
     public Flowable<RequestWrapper> getByUri(String uri) {
         if (uri == null || uri.isEmpty())
             throw new IllegalArgumentException();
-        return service.subscriber()
+        return getFlowable()
             .filter(e -> uri.equals(e.getUri()));
     }
 
-    @Get(value = "/method/{method}",
-        produces = MediaType.APPLICATION_JSON_STREAM,
-        processes = {MediaType.APPLICATION_JSON, MediaType.TEXT_JSON, MediaType.APPLICATION_JSON_STREAM}
-    )
+    @Get(value = "/method/{method}", produces = MediaType.APPLICATION_JSON_STREAM)
     public Flowable<RequestWrapper> getByMethod(String method) {
         if (method == null || method.isEmpty())
             throw new IllegalArgumentException();
-        return service.subscriber()
+        return getFlowable()
             .filter(e -> method.equals(e.getMethod()));
     }
 
-    @Get(value = "/filter/{method}/{uri}",
-        produces = MediaType.APPLICATION_JSON_STREAM,
-        processes = {MediaType.APPLICATION_JSON, MediaType.TEXT_JSON, MediaType.APPLICATION_JSON_STREAM}
-    )
+    @Get(value = "/filter/{method}/{uri}", produces = MediaType.APPLICATION_JSON_STREAM)
     public Flowable<RequestWrapper> filter(String method, String uri) {
         if (method == null || method.isEmpty())
             throw new IllegalArgumentException();
         if (uri == null || uri.isEmpty())
             throw new IllegalArgumentException();
-        return service.subscriber()
+        return getFlowable()
             .filter(e -> method.equals(e.getMethod())).filter(e -> uri.equals(e.getUri()));
+    }
+    
+    private Flowable<RequestWrapper> getFlowable() {
+        return service.subscriber().doOnEach(e -> log.info("----- {} -----", e));
     }
 }
