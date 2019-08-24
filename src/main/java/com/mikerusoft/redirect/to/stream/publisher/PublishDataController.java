@@ -53,6 +53,6 @@ public class PublishDataController {
     }
     
     private Flowable<RequestWrapper> getFlowable() {
-        return service.subscriber().doOnEach(e -> log.info("----- {} -----", e));
+        return service.subscriber();
     }
 }

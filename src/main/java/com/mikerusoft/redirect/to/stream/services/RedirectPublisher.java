@@ -5,9 +5,11 @@ import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import io.reactivex.FlowableEmitter;
 import io.reactivex.FlowableOnSubscribe;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Singleton;
 
+@Slf4j
 @Singleton
 public class RedirectPublisher implements RedirectService<RequestWrapper, Flowable<RequestWrapper>>, FlowableOnSubscribe<RequestWrapper> {
 
@@ -17,6 +19,8 @@ public class RedirectPublisher implements RedirectService<RequestWrapper, Flowab
     public void emit(RequestWrapper element) {
         if (emitter != null)
             emitter.onNext(element);
+        else
+            log.warn("emitter is still null"); // todo: for working version remove this log
     }
 
     @Override
