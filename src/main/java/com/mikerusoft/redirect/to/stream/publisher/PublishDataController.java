@@ -5,25 +5,23 @@ import com.mikerusoft.redirect.to.stream.services.RedirectService;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
-import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
-import io.reactivex.FlowableOnSubscribe;
 
 import javax.inject.Inject;
 
 @Controller("/retrieve")
 public class PublishDataController {
 
-    private RedirectService<RequestWrapper, FlowableOnSubscribe<RequestWrapper>> service;
+    private RedirectService<RequestWrapper, Flowable<RequestWrapper>> service;
 
     @Inject
-    public PublishDataController(RedirectService<RequestWrapper, FlowableOnSubscribe<RequestWrapper>> service) {
+    public PublishDataController(RedirectService<RequestWrapper, Flowable<RequestWrapper>> service) {
         this.service = service;
     }
 
     @Get(value = "/all", processes = MediaType.APPLICATION_JSON_STREAM)
     public Flowable<RequestWrapper> getAllRequests() {
-        return Flowable.create(service.subscriber(), BackpressureStrategy.BUFFER);
+        return service.subscriber();
     }
 
     @Get(value = "/uri/{uri}",
@@ -33,7 +31,7 @@ public class PublishDataController {
     public Flowable<RequestWrapper> getByUri(String uri) {
         if (uri == null || uri.isEmpty())
             throw new IllegalArgumentException();
-        return Flowable.create(service.subscriber(), BackpressureStrategy.BUFFER)
+        return service.subscriber()
             .filter(e -> uri.equals(e.getUri()));
     }
 
@@ -44,7 +42,7 @@ public class PublishDataController {
     public Flowable<RequestWrapper> getByMethod(String method) {
         if (method == null || method.isEmpty())
             throw new IllegalArgumentException();
-        return Flowable.create(service.subscriber(), BackpressureStrategy.BUFFER)
+        return service.subscriber()
             .filter(e -> method.equals(e.getMethod()));
     }
 
@@ -57,7 +55,7 @@ public class PublishDataController {
             throw new IllegalArgumentException();
         if (uri == null || uri.isEmpty())
             throw new IllegalArgumentException();
-        return Flowable.create(service.subscriber(), BackpressureStrategy.BUFFER)
+        return service.subscriber()
             .filter(e -> method.equals(e.getMethod())).filter(e -> uri.equals(e.getUri()));
     }
 }

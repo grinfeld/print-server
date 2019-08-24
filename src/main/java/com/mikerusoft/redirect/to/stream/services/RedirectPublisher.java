@@ -1,13 +1,15 @@
 package com.mikerusoft.redirect.to.stream.services;
 
 import com.mikerusoft.redirect.to.stream.model.RequestWrapper;
+import io.reactivex.BackpressureStrategy;
+import io.reactivex.Flowable;
 import io.reactivex.FlowableEmitter;
 import io.reactivex.FlowableOnSubscribe;
 
 import javax.inject.Singleton;
 
 @Singleton
-public class RedirectPublisher implements RedirectService<RequestWrapper, FlowableOnSubscribe<RequestWrapper>>, FlowableOnSubscribe<RequestWrapper> {
+public class RedirectPublisher implements RedirectService<RequestWrapper, Flowable<RequestWrapper>>, FlowableOnSubscribe<RequestWrapper> {
 
     private FlowableEmitter<RequestWrapper> emitter;
 
@@ -18,8 +20,8 @@ public class RedirectPublisher implements RedirectService<RequestWrapper, Flowab
     }
 
     @Override
-    public FlowableOnSubscribe<RequestWrapper> subscriber() {
-        return this;
+    public Flowable<RequestWrapper> subscriber() {
+        return Flowable.create(this, BackpressureStrategy.BUFFER);
     }
 
     @Override
