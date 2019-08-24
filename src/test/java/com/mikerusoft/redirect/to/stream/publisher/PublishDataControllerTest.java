@@ -10,11 +10,13 @@ import io.micronaut.http.client.annotation.Client;
 import io.micronaut.test.annotation.MicronautTest;
 import io.reactivex.Flowable;
 import io.reactivex.FlowableOnSubscribe;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.subscribers.TestSubscriber;
 import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
 
+import java.util.List;
 import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -37,13 +39,20 @@ class PublishDataControllerTest {
     @Test
     void when1RequestPublished_expectedOneResponse() throws Exception {
         Flowable<RequestWrapper> retrieve = client.jsonStream(HttpRequest.GET("/retrieve/all"), RequestWrapper.class);
-        
-        Thread.sleep(300L);
 
-        service.emit(RequestWrapper.builder().method("GET").uri("somepath").build());
+        Executors.newSingleThreadExecutor().execute(() -> {
+            int i = 0;
+            while(i < 10) {
+                service.emit(RequestWrapper.builder().method("GET").uri("somepath/" + i).build());
+                i++;
+                try {
+                    Thread.sleep(100L);
+                } catch (Exception ignore){}
+            }
+        });
 
-        TestSubscriber<RequestWrapper> test = retrieve.test();
-        test.assertValueCount(1).assertValues(RequestWrapper.builder().method("GET").uri("somepath").build());
+        List<RequestWrapper> r = retrieve.buffer(5).blockingFirst();
+        System.out.println(" &&&&&&&&& " + r);
     }
 
 }
