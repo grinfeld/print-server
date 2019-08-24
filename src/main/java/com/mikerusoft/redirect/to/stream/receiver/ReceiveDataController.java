@@ -17,7 +17,7 @@ import java.util.stream.StreamSupport;
 
 import static io.micronaut.http.HttpResponse.ok;
 
-@Controller
+@Controller("/receive")
 @Slf4j
 public class ReceiveDataController {
 

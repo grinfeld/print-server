@@ -2,6 +2,7 @@ package com.mikerusoft.redirect.to.stream.receiver;
 
 import com.mikerusoft.redirect.to.stream.model.RequestWrapper;
 import com.mikerusoft.redirect.to.stream.services.RedirectService;
+import io.micronaut.context.annotation.Primary;
 import io.micronaut.http.*;
 import io.micronaut.http.client.RxHttpClient;
 import io.micronaut.http.client.annotation.Client;
@@ -37,6 +38,7 @@ class ReceiveDataControllerTest {
     @Inject
     private RedirectService<RequestWrapper, FlowableOnSubscribe<RequestWrapper>> service;
 
+    @Primary
     @MockBean(RedirectService.class)
     RedirectService<String, FlowableOnSubscribe<RequestWrapper>> service() {
         return mock(RedirectService.class);
@@ -44,7 +46,7 @@ class ReceiveDataControllerTest {
 
     @DisplayName("when sending request to exact  ")
     @ParameterizedTest(name = " {0} without query params, expected method {1} received and service emitted data once")
-    @CsvSource({"/get/,GET"})
+    @CsvSource({"/receive/get/,GET"})
     void GET_withExactURI_whenNoParams_expectedRequestReceivedAndEmittedOnce(String uri, String method) {
         ArgumentCaptor<RequestWrapper> captor = ArgumentCaptor.forClass(RequestWrapper.class);
         MutableHttpRequest<String> request = mockReturnNothing(method, buildUri(uri, ""));
@@ -61,7 +63,7 @@ class ReceiveDataControllerTest {
 
     @DisplayName("when sending request to exact  ")
     @ParameterizedTest(name = " {0} without query params, expected method {1} and params {2} received and service emitted data once")
-    @CsvSource({"/get/,GET,a=aaaa&b=bbbb"})
+    @CsvSource({"/receive/get/,GET,a=aaaa&b=bbbb"})
     void GET_withExactURI_whenParams_expectedRequestReceivedAndEmittedOnce(String uri, String method, String params) {
         ArgumentCaptor<RequestWrapper> captor = ArgumentCaptor.forClass(RequestWrapper.class);
         MutableHttpRequest<String> request = mockReturnNothing(method, buildUri(uri, params));
@@ -80,7 +82,7 @@ class ReceiveDataControllerTest {
 
     @DisplayName("when sending request to longer URI  ")
     @ParameterizedTest(name = " {0} without query params, expected method {1} received and service emitted data once")
-    @CsvSource({"/post/something/new,POST,body=stam", "/put/something/new,PUT,body=stam"})
+    @CsvSource({"/receive/post/something/new,POST,body=stam", "/receive/put/something/new,PUT,body=stam"})
     void NonGet_withLongerURI_whenNoParams_expectedRequestReceivedAndEmittedOnce(String uri, String method, String body) {
         ArgumentCaptor<RequestWrapper> captor = ArgumentCaptor.forClass(RequestWrapper.class);
         MutableHttpRequest<String> request = mockReturnNothing(method, buildUri(uri, "")).body(body);
@@ -97,7 +99,7 @@ class ReceiveDataControllerTest {
 
     @DisplayName("when sending request to exact  ")
     @ParameterizedTest(name = " {0} without query params, expected method {1}, body {3} and params {2} received and service emitted data once")
-    @CsvSource({"/post/,POST,a=aaaa&b=bbb,body=thebodyishere", "/put/,PUT,a=aaaa&b=bbb,body=thebodyishere"})
+    @CsvSource({"/receive/post/,POST,a=aaaa&b=bbb,body=thebodyishere", "/receive/put/,PUT,a=aaaa&b=bbb,body=thebodyishere"})
     void NonGET_withExactURI_whenParamsAndBody_expectedRequestReceivedAndEmittedOnce(String uri, String method, String params, String body) {
         ArgumentCaptor<RequestWrapper> captor = ArgumentCaptor.forClass(RequestWrapper.class);
         MutableHttpRequest<String> request = mockReturnNothing(method, buildUri(uri, params)).body(body);

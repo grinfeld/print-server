@@ -1,23 +1,17 @@
 package com.mikerusoft.redirect.to.stream.publisher;
 
-import com.mikerusoft.redirect.to.stream.model.Filter;
-import com.mikerusoft.redirect.to.stream.model.FilterRequest;
 import com.mikerusoft.redirect.to.stream.model.RequestWrapper;
 import com.mikerusoft.redirect.to.stream.services.RedirectService;
 import io.micronaut.http.MediaType;
-import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
-import io.micronaut.http.annotation.Post;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import io.reactivex.FlowableOnSubscribe;
 
 import javax.inject.Inject;
-import java.util.List;
-import java.util.Map;
 
-@Controller
+@Controller("/retrieve")
 public class PublishDataController {
 
     private RedirectService<RequestWrapper, FlowableOnSubscribe<RequestWrapper>> service;
@@ -32,44 +26,38 @@ public class PublishDataController {
         return Flowable.create(service.subscriber(), BackpressureStrategy.BUFFER);
     }
 
-    @Post(value = "/filter",
+    @Get(value = "/uri/{uri}",
         produces = MediaType.APPLICATION_JSON_STREAM,
         processes = {MediaType.APPLICATION_JSON, MediaType.TEXT_JSON, MediaType.APPLICATION_JSON_STREAM}
     )
-    public Flowable<RequestWrapper> getFilteredRequests(@Body FilterRequest req) {
-        if (req == null)
-            return getAllRequests();
+    public Flowable<RequestWrapper> getByUri(String uri) {
+        if (uri == null || uri.isEmpty())
+            throw new IllegalArgumentException();
         return Flowable.create(service.subscriber(), BackpressureStrategy.BUFFER)
-            .filter(e -> filterByMethod(e.getMethod(), req.getForMethod()))
-            .filter(e -> filterByUri(e.getUri(), req.getForUri()))
-            .filter(e -> filterByQueryParams(e.getQueryParams(), req.getForQueryParams()))
-            .filter(e -> filterByHeaders(e.getHeaders(), req.getForHeaders()))
-            .filter(e -> filterByCookies(e.getCookies(), req.getForCookie()))
-        ;
+            .filter(e -> uri.equals(e.getUri()));
     }
 
-    private static boolean filterByMethod(String req, Filter filter) {
-        if (filter == null) return true;
-        return false;
+    @Get(value = "/method/{method}",
+        produces = MediaType.APPLICATION_JSON_STREAM,
+        processes = {MediaType.APPLICATION_JSON, MediaType.TEXT_JSON, MediaType.APPLICATION_JSON_STREAM}
+    )
+    public Flowable<RequestWrapper> getByMethod(String method) {
+        if (method == null || method.isEmpty())
+            throw new IllegalArgumentException();
+        return Flowable.create(service.subscriber(), BackpressureStrategy.BUFFER)
+            .filter(e -> method.equals(e.getMethod()));
     }
 
-    private static boolean filterByUri(String req, Filter filter) {
-        if (filter == null) return true;
-        return false;
-    }
-
-    private static boolean filterByQueryParams(Map<String, List<String>> req, Filter filter) {
-        if (filter == null) return true;
-        return false;
-    }
-
-    private static boolean filterByHeaders(Map<String, List<String>> req, Filter filter) {
-        if (filter == null) return true;
-        return false;
-    }
-
-    private static boolean filterByCookies(Map<String, String> req, Filter filter) {
-        if (filter == null) return true;
-        return false;
+    @Get(value = "/filter/{method}/{uri}",
+        produces = MediaType.APPLICATION_JSON_STREAM,
+        processes = {MediaType.APPLICATION_JSON, MediaType.TEXT_JSON, MediaType.APPLICATION_JSON_STREAM}
+    )
+    public Flowable<RequestWrapper> filter(String method, String uri) {
+        if (method == null || method.isEmpty())
+            throw new IllegalArgumentException();
+        if (uri == null || uri.isEmpty())
+            throw new IllegalArgumentException();
+        return Flowable.create(service.subscriber(), BackpressureStrategy.BUFFER)
+            .filter(e -> method.equals(e.getMethod())).filter(e -> uri.equals(e.getUri()));
     }
 }
