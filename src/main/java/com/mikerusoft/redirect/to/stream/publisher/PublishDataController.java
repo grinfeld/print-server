@@ -21,12 +21,12 @@ public class PublishDataController {
         this.service = service;
     }
 
-    @Get(value = "/all", processes = MediaType.APPLICATION_JSON_STREAM)
+    @Get(value = "/all", processes = {MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON_STREAM})
     public Flowable<RequestWrapper> getAllRequests() {
         return getFlowable();
     }
 
-    @Get(value = "/uri/{uri}", produces = MediaType.APPLICATION_JSON_STREAM)
+    @Get(value = "/uri/{uri}", produces = {MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON_STREAM})
     public Flowable<RequestWrapper> getByUri(String uri) {
         if (uri == null || uri.isEmpty())
             throw new IllegalArgumentException();
@@ -34,7 +34,7 @@ public class PublishDataController {
             .filter(e -> uri.equals(e.getUri()));
     }
 
-    @Get(value = "/method/{method}", produces = MediaType.APPLICATION_JSON_STREAM)
+    @Get(value = "/method/{method}", produces = {MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON_STREAM})
     public Flowable<RequestWrapper> getByMethod(String method) {
         if (method == null || method.isEmpty())
             throw new IllegalArgumentException();
@@ -42,7 +42,7 @@ public class PublishDataController {
             .filter(e -> method.equals(e.getMethod()));
     }
 
-    @Get(value = "/filter/{method}/{uri}", produces = MediaType.APPLICATION_JSON_STREAM)
+    @Get(value = "/filter/{method}/{uri}", produces = {MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON_STREAM})
     public Flowable<RequestWrapper> filter(String method, String uri) {
         if (method == null || method.isEmpty())
             throw new IllegalArgumentException();
