@@ -16,6 +16,7 @@ buildscript {
 
 plugins {
     id "net.ltgt.apt" version "0.18" // <1>
+    id "org.sonarqube" version "2.7.1"
 }
 
 repositories {
@@ -84,8 +85,10 @@ shadowJar {
     mergeServiceFiles()
 }
 
-run.jvmArgs('-noverify', '-XX:TieredStopAtLevel=1', '-Dcom.sun.management.jmxremote')
+sonarqube {
+    properties {
+        sonar.projectKey = "grinfeld_redirect-to-stream"
+    }
+}
 
-/*application {
-    mainClassName = 'org.gradle.sample.Main'
-}*/
+run.jvmArgs('-noverify', '-XX:TieredStopAtLevel=1', '-Dcom.sun.management.jmxremote')
