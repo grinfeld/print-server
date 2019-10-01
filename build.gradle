@@ -85,10 +85,4 @@ shadowJar {
     mergeServiceFiles()
 }
 
-sonarqube {
-    properties {
-        sonar.projectKey = "grinfeld_redirect-to-stream"
-    }
-}
-
 run.jvmArgs('-noverify', '-XX:TieredStopAtLevel=1', '-Dcom.sun.management.jmxremote')
