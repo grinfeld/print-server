@@ -1,0 +1,7 @@
+micronaut:
+  application:
+    name: redirect-to-stream
+
+app:
+  subscribers:
+    size: 5
