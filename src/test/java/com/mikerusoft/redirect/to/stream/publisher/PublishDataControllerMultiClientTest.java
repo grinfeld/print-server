@@ -1,6 +1,7 @@
 package com.mikerusoft.redirect.to.stream.publisher;
 
-import com.mikerusoft.redirect.to.stream.model.RequestWrapper;
+import com.mikerusoft.redirect.to.stream.model.HttpRequestWrapper;
+import com.mikerusoft.redirect.to.stream.publisher.http.PublishDataController;
 import com.mikerusoft.redirect.to.stream.services.RedirectService;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.client.RxStreamingHttpClient;
@@ -22,27 +23,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 class PublishDataControllerMultiClientTest {
 
     @Inject
-    private RedirectService<RequestWrapper, FlowableOnSubscribe<RequestWrapper>> service;
+    private RedirectService<HttpRequestWrapper, FlowableOnSubscribe<HttpRequestWrapper>> service;
 
     @Inject
     private PublishDataController controller;
 
     @Inject
-    @Client("/retrieve")
+    @Client("/retrieve/http")
     private RxStreamingHttpClient client1;
 
     @Inject
-    @Client("/retrieve")
+    @Client("/retrieve/http")
     private RxStreamingHttpClient client2;
 
     @Test
     @Timeout(value = 1, unit = TimeUnit.SECONDS)
     void when2SubscribersAndPublished2Request_expected2ResponseForEverySubscriber() throws Exception {
-        Flowable<RequestWrapper> retrieve1 = client1.jsonStream(HttpRequest.GET("/all"), RequestWrapper.class);
-        Flowable<RequestWrapper> retrieve2 = client2.jsonStream(HttpRequest.GET("/all"), RequestWrapper.class);
+        Flowable<HttpRequestWrapper> retrieve1 = client1.jsonStream(HttpRequest.GET("/all"), HttpRequestWrapper.class);
+        Flowable<HttpRequestWrapper> retrieve2 = client2.jsonStream(HttpRequest.GET("/all"), HttpRequestWrapper.class);
         Executors.newSingleThreadScheduledExecutor().schedule(() -> {
-            service.emit(RequestWrapper.builder().method("GET").uri("somepath/0").build());
-            service.emit(RequestWrapper.builder().method("POST").uri("somepath/1").build());
+            service.emit(HttpRequestWrapper.builder().method("GET").uri("somepath/0").build());
+            service.emit(HttpRequestWrapper.builder().method("POST").uri("somepath/1").build());
         },
         300L, TimeUnit.MILLISECONDS);
         ExecutorService executors = Executors.newFixedThreadPool(2);
@@ -52,12 +53,12 @@ class PublishDataControllerMultiClientTest {
         executors.awaitTermination(10, TimeUnit.SECONDS);
     }
 
-    private static void assertRequest(Flowable<RequestWrapper> retrieve) {
-        List<RequestWrapper> reqs = retrieve.buffer(2).blockingFirst();
+    private static void assertRequest(Flowable<HttpRequestWrapper> retrieve) {
+        List<HttpRequestWrapper> reqs = retrieve.buffer(2).blockingFirst();
         assertThat(reqs).isNotNull().hasSize(2)
                 .containsExactly(
-                        RequestWrapper.builder().method("GET").uri("somepath/0").build(),
-                        RequestWrapper.builder().method("POST").uri("somepath/1").build()
+                        HttpRequestWrapper.builder().method("GET").uri("somepath/0").build(),
+                        HttpRequestWrapper.builder().method("POST").uri("somepath/1").build()
                 )
         ;
     }

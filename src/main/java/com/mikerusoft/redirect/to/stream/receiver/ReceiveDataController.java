@@ -1,6 +1,6 @@
 package com.mikerusoft.redirect.to.stream.receiver;
 
-import com.mikerusoft.redirect.to.stream.model.RequestWrapper;
+import com.mikerusoft.redirect.to.stream.model.HttpRequestWrapper;
 import com.mikerusoft.redirect.to.stream.services.RedirectService;
 import com.mikerusoft.redirect.to.stream.utils.Pair;
 import io.micronaut.http.*;
@@ -21,10 +21,10 @@ import static io.micronaut.http.HttpResponse.ok;
 @Slf4j
 public class ReceiveDataController {
 
-    private RedirectService<RequestWrapper, FlowableOnSubscribe<RequestWrapper>> service;
+    private RedirectService<HttpRequestWrapper, FlowableOnSubscribe<HttpRequestWrapper>> service;
 
     @Inject
-    public ReceiveDataController(RedirectService<RequestWrapper, FlowableOnSubscribe<RequestWrapper>> service) {
+    public ReceiveDataController(RedirectService<HttpRequestWrapper, FlowableOnSubscribe<HttpRequestWrapper>> service) {
         this.service = service;
     }
 
@@ -49,12 +49,12 @@ public class ReceiveDataController {
         return ok();
     }
 
-    private static RequestWrapper extractRequest(HttpRequest<?> request, String body) {
+    private static HttpRequestWrapper extractRequest(HttpRequest<?> request, String body) {
         Map<String, List<String>> headers = extractHeaders(request.getHeaders());
         Map<String, List<String>> queryParams = extractQueryParams(request.getParameters());
         Map<String, String> cookies = extractCookies(request);
 
-        return RequestWrapper.builder().headers(headers).queryParams(queryParams)
+        return HttpRequestWrapper.builder().headers(headers).params(queryParams)
                 .cookies(cookies).method(request.getMethod().name())
                 .uri(request.getUri().getPath())
                 .body(body)
