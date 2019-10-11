@@ -1,6 +1,6 @@
-package com.mikerusoft.redirect.to.stream.publisher;
+package com.mikerusoft.redirect.to.stream.publisher.http;
 
-import com.mikerusoft.redirect.to.stream.model.RequestWrapper;
+import com.mikerusoft.redirect.to.stream.model.HttpRequestWrapper;
 import com.mikerusoft.redirect.to.stream.services.RedirectService;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
@@ -11,23 +11,23 @@ import lombok.extern.slf4j.Slf4j;
 import javax.inject.Inject;
 
 @Slf4j
-@Controller("/retrieve")
+@Controller("/retrieve/http")
 public class PublishDataController {
 
-    private RedirectService<RequestWrapper, Flowable<RequestWrapper>> service;
+    private RedirectService<HttpRequestWrapper, Flowable<HttpRequestWrapper>> service;
 
     @Inject
-    public PublishDataController(RedirectService<RequestWrapper, Flowable<RequestWrapper>> service) {
+    public PublishDataController(RedirectService<HttpRequestWrapper, Flowable<HttpRequestWrapper>> service) {
         this.service = service;
     }
 
     @Get(value = "/all", processes = {MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON_STREAM})
-    public Flowable<RequestWrapper> getAllRequests() {
+    public Flowable<HttpRequestWrapper> getAllRequests() {
         return getFlowable();
     }
 
     @Get(value = "/uri/{uri}", produces = {MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON_STREAM})
-    public Flowable<RequestWrapper> getByUri(String uri) {
+    public Flowable<HttpRequestWrapper> getByUri(String uri) {
         if (uri == null || uri.isEmpty())
             throw new IllegalArgumentException();
         return getFlowable()
@@ -35,7 +35,7 @@ public class PublishDataController {
     }
 
     @Get(value = "/method/{method}", produces = {MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON_STREAM})
-    public Flowable<RequestWrapper> getByMethod(String method) {
+    public Flowable<HttpRequestWrapper> getByMethod(String method) {
         if (method == null || method.isEmpty())
             throw new IllegalArgumentException();
         return getFlowable()
@@ -43,7 +43,7 @@ public class PublishDataController {
     }
 
     @Get(value = "/filter/{method}/{uri}", produces = {MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON_STREAM})
-    public Flowable<RequestWrapper> filter(String method, String uri) {
+    public Flowable<HttpRequestWrapper> filter(String method, String uri) {
         if (method == null || method.isEmpty())
             throw new IllegalArgumentException();
         if (uri == null || uri.isEmpty())
@@ -52,7 +52,7 @@ public class PublishDataController {
             .filter(e -> method.equals(e.getMethod())).filter(e -> uri.equals(e.getUri()));
     }
     
-    private Flowable<RequestWrapper> getFlowable() {
+    private Flowable<HttpRequestWrapper> getFlowable() {
         return service.subscriber();
     }
 }

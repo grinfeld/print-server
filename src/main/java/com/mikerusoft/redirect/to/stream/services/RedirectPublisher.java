@@ -1,6 +1,6 @@
 package com.mikerusoft.redirect.to.stream.services;
 
-import com.mikerusoft.redirect.to.stream.model.RequestWrapper;
+import com.mikerusoft.redirect.to.stream.model.HttpRequestWrapper;
 import io.micronaut.context.annotation.Value;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
@@ -15,11 +15,11 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Singleton
-public class RedirectPublisher implements RedirectService<RequestWrapper, Flowable<RequestWrapper>>, FlowableOnSubscribe<RequestWrapper> {
+public class RedirectPublisher implements RedirectService<HttpRequestWrapper, Flowable<HttpRequestWrapper>>, FlowableOnSubscribe<HttpRequestWrapper> {
 
     private final static int DEF_SUBSCRIBERS = 10;
 
-    private Map<Integer, FlowableEmitter<RequestWrapper>> emitters;
+    private Map<Integer, FlowableEmitter<HttpRequestWrapper>> emitters;
     private Semaphore semaphore;
 
     public RedirectPublisher(@Value("${app.subscribers.size:10}") int subscribers) {
@@ -45,7 +45,7 @@ public class RedirectPublisher implements RedirectService<RequestWrapper, Flowab
     }
 
     @Override
-    public void emit(RequestWrapper element) {
+    public void emit(HttpRequestWrapper element) {
         if (emitters != null && !emitters.isEmpty())
             emitters.values().stream().filter(e -> !e.isCancelled()).forEach(e -> e.onNext(element));
         else
@@ -53,12 +53,12 @@ public class RedirectPublisher implements RedirectService<RequestWrapper, Flowab
     }
 
     @Override
-    public Flowable<RequestWrapper> subscriber() {
+    public Flowable<HttpRequestWrapper> subscriber() {
         return Flowable.create(this, BackpressureStrategy.BUFFER);
     }
 
     @Override
-    public void subscribe(FlowableEmitter<RequestWrapper> emitter) throws Exception {
+    public void subscribe(FlowableEmitter<HttpRequestWrapper> emitter) throws Exception {
         try {
             if (semaphore.tryAcquire()) {
                 this.emitters.put(emitter.hashCode(), emitter);

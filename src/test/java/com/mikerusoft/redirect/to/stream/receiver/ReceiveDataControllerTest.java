@@ -1,6 +1,6 @@
 package com.mikerusoft.redirect.to.stream.receiver;
 
-import com.mikerusoft.redirect.to.stream.model.RequestWrapper;
+import com.mikerusoft.redirect.to.stream.model.HttpRequestWrapper;
 import com.mikerusoft.redirect.to.stream.services.RedirectService;
 import io.micronaut.context.annotation.Primary;
 import io.micronaut.http.*;
@@ -36,11 +36,11 @@ class ReceiveDataControllerTest {
     private RxHttpClient client;
 
     @Inject
-    private RedirectService<RequestWrapper, FlowableOnSubscribe<RequestWrapper>> service;
+    private RedirectService<HttpRequestWrapper, FlowableOnSubscribe<HttpRequestWrapper>> service;
 
     @Primary
     @MockBean(RedirectService.class)
-    RedirectService<String, FlowableOnSubscribe<RequestWrapper>> service() {
+    RedirectService<String, FlowableOnSubscribe<HttpRequestWrapper>> service() {
         return mock(RedirectService.class);
     }
 
@@ -48,7 +48,7 @@ class ReceiveDataControllerTest {
     @ParameterizedTest(name = " {0} without query params, expected method {1} received and service emitted data once")
     @CsvSource({"/receive/get/,GET"})
     void GET_withExactURI_whenNoParams_expectedRequestReceivedAndEmittedOnce(String uri, String method) {
-        ArgumentCaptor<RequestWrapper> captor = ArgumentCaptor.forClass(RequestWrapper.class);
+        ArgumentCaptor<HttpRequestWrapper> captor = ArgumentCaptor.forClass(HttpRequestWrapper.class);
         MutableHttpRequest<String> request = mockReturnNothing(method, buildUri(uri, ""));
         request.contentType(MediaType.TEXT_PLAIN);
         HttpResponse<?> response = client.toBlocking().exchange(request);
@@ -57,7 +57,7 @@ class ReceiveDataControllerTest {
 
         verify(service, times(1)).emit(captor.capture());
 
-        RequestWrapper resultValue = captor.getValue();
+        HttpRequestWrapper resultValue = captor.getValue();
         assertSimpleRequestWrapper(uri, method, null, resultValue);
     }
 
@@ -65,7 +65,7 @@ class ReceiveDataControllerTest {
     @ParameterizedTest(name = " {0} without query params, expected method {1} and params {2} received and service emitted data once")
     @CsvSource({"/receive/get/,GET,a=aaaa&b=bbbb"})
     void GET_withExactURI_whenParams_expectedRequestReceivedAndEmittedOnce(String uri, String method, String params) {
-        ArgumentCaptor<RequestWrapper> captor = ArgumentCaptor.forClass(RequestWrapper.class);
+        ArgumentCaptor<HttpRequestWrapper> captor = ArgumentCaptor.forClass(HttpRequestWrapper.class);
         MutableHttpRequest<String> request = mockReturnNothing(method, buildUri(uri, params));
         request.contentType(MediaType.TEXT_PLAIN);
         HttpResponse<?> response = client.toBlocking().exchange(request);
@@ -74,9 +74,9 @@ class ReceiveDataControllerTest {
 
         verify(service, times(1)).emit(captor.capture());
 
-        RequestWrapper resultValue = captor.getValue();
+        HttpRequestWrapper resultValue = captor.getValue();
         assertRequestSimpleFields(resultValue, method, null, uri);
-        assertQueryParams(resultValue.getQueryParams(), params);
+        assertQueryParams(resultValue.getParams(), params);
         assertThat(resultValue.getHeaders()).isNotEmpty();
     }
 
@@ -84,7 +84,7 @@ class ReceiveDataControllerTest {
     @ParameterizedTest(name = " {0} without query params, expected method {1} received and service emitted data once")
     @CsvSource({"/receive/post/something/new,POST,body=stam", "/receive/put/something/new,PUT,body=stam"})
     void NonGet_withLongerURI_whenNoParams_expectedRequestReceivedAndEmittedOnce(String uri, String method, String body) {
-        ArgumentCaptor<RequestWrapper> captor = ArgumentCaptor.forClass(RequestWrapper.class);
+        ArgumentCaptor<HttpRequestWrapper> captor = ArgumentCaptor.forClass(HttpRequestWrapper.class);
         MutableHttpRequest<String> request = mockReturnNothing(method, buildUri(uri, "")).body(body);
         request.contentType(MediaType.TEXT_PLAIN);
         HttpResponse<?> response = client.toBlocking().exchange(request);
@@ -93,7 +93,7 @@ class ReceiveDataControllerTest {
 
         verify(service, times(1)).emit(captor.capture());
 
-        RequestWrapper resultValue = captor.getValue();
+        HttpRequestWrapper resultValue = captor.getValue();
         assertSimpleRequestWrapper(uri, method, body, resultValue);
     }
 
@@ -101,7 +101,7 @@ class ReceiveDataControllerTest {
     @ParameterizedTest(name = " {0} without query params, expected method {1}, body {3} and params {2} received and service emitted data once")
     @CsvSource({"/receive/post/,POST,a=aaaa&b=bbb,body=thebodyishere", "/receive/put/,PUT,a=aaaa&b=bbb,body=thebodyishere"})
     void NonGET_withExactURI_whenParamsAndBody_expectedRequestReceivedAndEmittedOnce(String uri, String method, String params, String body) {
-        ArgumentCaptor<RequestWrapper> captor = ArgumentCaptor.forClass(RequestWrapper.class);
+        ArgumentCaptor<HttpRequestWrapper> captor = ArgumentCaptor.forClass(HttpRequestWrapper.class);
         MutableHttpRequest<String> request = mockReturnNothing(method, buildUri(uri, params)).body(body);
         request.contentType(MediaType.TEXT_PLAIN);
         HttpResponse<?> response = client.toBlocking().exchange(request);
@@ -110,14 +110,14 @@ class ReceiveDataControllerTest {
 
         verify(service, times(1)).emit(captor.capture());
 
-        RequestWrapper resultValue = captor.getValue();
+        HttpRequestWrapper resultValue = captor.getValue();
         assertRequestSimpleFields(resultValue, method, body, uri);
-        assertQueryParams(resultValue.getQueryParams(), params);
+        assertQueryParams(resultValue.getParams(), params);
         assertThat(resultValue.getHeaders()).isNotEmpty();
     }
 
     MutableHttpRequest<String> mockReturnNothing(String method, String uri) {
-        doNothing().when(service).emit(any(RequestWrapper.class));
+        doNothing().when(service).emit(any(HttpRequestWrapper.class));
         return HttpRequest.create(HttpMethod.valueOf(method), uri);
     }
 
@@ -130,7 +130,7 @@ class ReceiveDataControllerTest {
             assertThat(actual).isNotNull().hasSize(expectedMap.size()).isEqualTo(expectedMap);
         }
 
-        static void assertRequestSimpleFields(RequestWrapper resultValue,
+        static void assertRequestSimpleFields(HttpRequestWrapper resultValue,
                                               String expectedMethod, String expectedBody, String expectedUri) {
             assertThat(resultValue).isNotNull()
                     .hasFieldOrPropertyWithValue("method", expectedMethod)
@@ -138,9 +138,9 @@ class ReceiveDataControllerTest {
                     .hasFieldOrPropertyWithValue("body", expectedBody);
         }
 
-        static void assertSimpleRequestWrapper(String uri, String method, String body, RequestWrapper resultValue) {
+        static void assertSimpleRequestWrapper(String uri, String method, String body, HttpRequestWrapper resultValue) {
             assertRequestSimpleFields(resultValue, method, body, uri);
-            assertThat(resultValue.getQueryParams()).isEmpty();
+            assertThat(resultValue.getParams()).isEmpty();
             assertThat(resultValue.getHeaders()).isNotEmpty();
         }
 
