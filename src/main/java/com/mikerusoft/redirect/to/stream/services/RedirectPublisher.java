@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @Singleton
 public class RedirectPublisher implements RedirectService<HttpRequestWrapper, Flowable<HttpRequestWrapper>>, FlowableOnSubscribe<HttpRequestWrapper> {
 
-    private final static int DEF_SUBSCRIBERS = 10;
+    private static final int DEF_SUBSCRIBERS = 10;
 
     private Map<Integer, FlowableEmitter<HttpRequestWrapper>> emitters;
     private Semaphore semaphore;
