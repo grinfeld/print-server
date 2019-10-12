@@ -1,5 +1,6 @@
 package com.mikerusoft.redirect.to.stream.publisher;
 
+import com.mikerusoft.redirect.to.stream.model.BasicRequestWrapper;
 import com.mikerusoft.redirect.to.stream.model.HttpRequestWrapper;
 import com.mikerusoft.redirect.to.stream.publisher.http.PublishDataController;
 import com.mikerusoft.redirect.to.stream.services.RedirectService;
@@ -23,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class PublishDataControllerTest {
 
     @Inject
-    private RedirectService<HttpRequestWrapper, FlowableOnSubscribe<HttpRequestWrapper>> service;
+    private RedirectService<BasicRequestWrapper, FlowableOnSubscribe<BasicRequestWrapper>> service;
 
     @Inject
     private PublishDataController controller;
@@ -54,6 +55,24 @@ class PublishDataControllerTest {
         assertThat(reqs).isNotNull().hasSize(2)
             .containsExactly(
                 HttpRequestWrapper.builder().method("GET").uri("somepath/0").build(),
+                HttpRequestWrapper.builder().method("POST").uri("somepath/1").build()
+            )
+        ;
+    }
+
+    @Test
+    @Timeout(value = 2, unit = TimeUnit.SECONDS)
+    void when1RequestIsHttpAnd2ndIsNotPublished_expected1HttpResponse() throws Exception {
+        Flowable<HttpRequestWrapper> retrieve = client.jsonStream(HttpRequest.GET("/all"), HttpRequestWrapper.class);
+        Executors.newSingleThreadScheduledExecutor().schedule(() -> {
+            service.emit(new BasicRequestWrapper(null, "staaaam body"));
+            service.emit(HttpRequestWrapper.builder().method("POST").uri("somepath/1").build());
+        },
+        300L, TimeUnit.MILLISECONDS);
+        Thread.sleep(100L);
+        List<HttpRequestWrapper> reqs = retrieve.buffer(1).blockingFirst();
+        assertThat(reqs).isNotNull().hasSize(1)
+            .containsExactly(
                 HttpRequestWrapper.builder().method("POST").uri("somepath/1").build()
             )
         ;

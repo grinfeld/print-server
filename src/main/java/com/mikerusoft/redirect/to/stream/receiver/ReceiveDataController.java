@@ -1,5 +1,6 @@
 package com.mikerusoft.redirect.to.stream.receiver;
 
+import com.mikerusoft.redirect.to.stream.model.BasicRequestWrapper;
 import com.mikerusoft.redirect.to.stream.model.HttpRequestWrapper;
 import com.mikerusoft.redirect.to.stream.services.RedirectService;
 import com.mikerusoft.redirect.to.stream.utils.Pair;
@@ -21,10 +22,10 @@ import static io.micronaut.http.HttpResponse.ok;
 @Slf4j
 public class ReceiveDataController {
 
-    private RedirectService<HttpRequestWrapper, FlowableOnSubscribe<HttpRequestWrapper>> service;
+    private RedirectService<BasicRequestWrapper, FlowableOnSubscribe<BasicRequestWrapper>> service;
 
     @Inject
-    public ReceiveDataController(RedirectService<HttpRequestWrapper, FlowableOnSubscribe<HttpRequestWrapper>> service) {
+    public ReceiveDataController(RedirectService<BasicRequestWrapper, FlowableOnSubscribe<BasicRequestWrapper>> service) {
         this.service = service;
     }
 
