@@ -1,5 +1,6 @@
 package com.mikerusoft.redirect.to.stream.publisher;
 
+import com.mikerusoft.redirect.to.stream.model.BasicRequestWrapper;
 import com.mikerusoft.redirect.to.stream.model.HttpRequestWrapper;
 import com.mikerusoft.redirect.to.stream.publisher.http.PublishDataController;
 import com.mikerusoft.redirect.to.stream.services.RedirectService;
@@ -23,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class PublishDataControllerMultiClientTest {
 
     @Inject
-    private RedirectService<HttpRequestWrapper, FlowableOnSubscribe<HttpRequestWrapper>> service;
+    private RedirectService<BasicRequestWrapper, FlowableOnSubscribe<BasicRequestWrapper>> service;
 
     @Inject
     private PublishDataController controller;

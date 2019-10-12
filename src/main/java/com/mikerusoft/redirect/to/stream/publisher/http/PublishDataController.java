@@ -1,5 +1,6 @@
 package com.mikerusoft.redirect.to.stream.publisher.http;
 
+import com.mikerusoft.redirect.to.stream.model.BasicRequestWrapper;
 import com.mikerusoft.redirect.to.stream.model.HttpRequestWrapper;
 import com.mikerusoft.redirect.to.stream.services.RedirectService;
 import io.micronaut.http.MediaType;
@@ -14,10 +15,10 @@ import javax.inject.Inject;
 @Controller("/retrieve/http")
 public class PublishDataController {
 
-    private RedirectService<HttpRequestWrapper, Flowable<HttpRequestWrapper>> service;
+    private RedirectService<BasicRequestWrapper, Flowable<BasicRequestWrapper>> service;
 
     @Inject
-    public PublishDataController(RedirectService<HttpRequestWrapper, Flowable<HttpRequestWrapper>> service) {
+    public PublishDataController(RedirectService<BasicRequestWrapper, Flowable<BasicRequestWrapper>> service) {
         this.service = service;
     }
 
@@ -53,6 +54,8 @@ public class PublishDataController {
     }
     
     private Flowable<HttpRequestWrapper> getFlowable() {
-        return service.subscriber();
+        return service.subscriber()
+                .filter(r -> r instanceof HttpRequestWrapper)
+                .map(r -> (HttpRequestWrapper)r);
     }
 }
