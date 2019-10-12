@@ -21,6 +21,7 @@ public class RedirectPublisher implements RedirectService<BasicRequestWrapper, F
 
     private Map<Integer, FlowableEmitter<BasicRequestWrapper>> emitters;
     private Semaphore semaphore;
+    private Flowable<BasicRequestWrapper> eventSubscribers;
 
     public RedirectPublisher(@Value("${app.subscribers.size:10}") int subscribers) {
         subscribers = subscribers <= 0 ? DEF_SUBSCRIBERS : subscribers;
@@ -32,6 +33,7 @@ public class RedirectPublisher implements RedirectService<BasicRequestWrapper, F
             stop();
             executor.shutdownNow();
         }));
+        eventSubscribers = Flowable.create(this, BackpressureStrategy.BUFFER).share();
     }
 
     private void stop() {
@@ -54,7 +56,7 @@ public class RedirectPublisher implements RedirectService<BasicRequestWrapper, F
 
     @Override
     public Flowable<BasicRequestWrapper> subscriber() {
-        return Flowable.create(this, BackpressureStrategy.BUFFER);
+        return eventSubscribers;
     }
 
     @Override
