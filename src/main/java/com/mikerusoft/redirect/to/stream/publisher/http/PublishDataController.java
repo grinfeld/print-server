@@ -6,6 +6,7 @@ import com.mikerusoft.redirect.to.stream.services.RedirectService;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
+import io.micronaut.http.annotation.PathVariable;
 import io.reactivex.Flowable;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,30 +28,31 @@ public class PublishDataController {
         return getFlowable();
     }
 
-    @Get(value = "/uri/{uri}", produces = {MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON_STREAM})
-    public Flowable<HttpRequestWrapper> getByUri(String uri) {
+    @Get(value = "/uri/{uri:.+}", produces = {MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON_STREAM})
+    public Flowable<HttpRequestWrapper> getByUri(@PathVariable("uri") String uri) {
         if (uri == null || uri.isEmpty())
             throw new IllegalArgumentException();
+        String checkedUri = "/uri/" + uri;
         return getFlowable()
-            .filter(e -> uri.equals(e.getUri()));
+            .filter(e -> checkedUri.equals(e.getUri()));
     }
 
     @Get(value = "/method/{method}", produces = {MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON_STREAM})
-    public Flowable<HttpRequestWrapper> getByMethod(String method) {
+    public Flowable<HttpRequestWrapper> getByMethod(@PathVariable("method") String method) {
         if (method == null || method.isEmpty())
             throw new IllegalArgumentException();
         return getFlowable()
-            .filter(e -> method.equals(e.getMethod()));
+            .filter(e -> method.equalsIgnoreCase(e.getMethod()));
     }
 
     @Get(value = "/filter/{method}/{uri}", produces = {MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON_STREAM})
-    public Flowable<HttpRequestWrapper> filter(String method, String uri) {
+    public Flowable<HttpRequestWrapper> filter(@PathVariable("method") String method, @PathVariable("uri") String uri) {
         if (method == null || method.isEmpty())
             throw new IllegalArgumentException();
         if (uri == null || uri.isEmpty())
             throw new IllegalArgumentException();
         return getFlowable()
-            .filter(e -> method.equals(e.getMethod())).filter(e -> uri.equals(e.getUri()));
+            .filter(e -> method.equalsIgnoreCase(e.getMethod())).filter(e -> uri.equals(e.getUri()));
     }
     
     private Flowable<HttpRequestWrapper> getFlowable() {

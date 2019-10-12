@@ -5,12 +5,15 @@ import com.mikerusoft.redirect.to.stream.publisher.http.model.HttpRequestWrapper
 import io.micronaut.test.annotation.MicronautTest;
 import io.reactivex.Flowable;
 import io.reactivex.subscribers.TestSubscriber;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
 import javax.inject.Inject;
 
 import java.util.concurrent.TimeUnit;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 @MicronautTest
 class RedirectPublisherTest {
@@ -72,5 +75,12 @@ class RedirectPublisherTest {
         expected.assertSubscribed();
         expected.assertNoErrors();
         expected.assertEmpty();
+    }
+
+    @Test
+    void whenNoSubscribers_emitDoesNotThrowException() {
+        assertDoesNotThrow(
+                () -> service.emit(new BasicRequestWrapper())
+        );
     }
 }
