@@ -1,5 +1,6 @@
-package com.mikerusoft.redirect.to.stream.model;
+package com.mikerusoft.redirect.to.stream.publisher.http.model;
 
+import com.mikerusoft.redirect.to.stream.model.BasicRequestWrapper;
 import lombok.*;
 
 import java.util.List;

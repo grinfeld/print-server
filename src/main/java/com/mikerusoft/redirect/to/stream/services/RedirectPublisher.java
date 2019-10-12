@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Singleton;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
@@ -37,6 +38,8 @@ public class RedirectPublisher implements RedirectService<BasicRequestWrapper, F
     }
 
     private void stop() {
+        // don't need to release waiting threads,
+        // since i am using semaphore.tryAcquire() that returns false immediately if no free permits
         semaphore = null;
         emitters = new ConcurrentHashMap<>();
     }
@@ -51,7 +54,7 @@ public class RedirectPublisher implements RedirectService<BasicRequestWrapper, F
         if (emitters != null && !emitters.isEmpty())
             emitters.values().stream().filter(e -> !e.isCancelled()).forEach(e -> e.onNext(element));
         else
-            log.warn("emitter is still null"); // todo: for working version remove this log
+            log.debug("nobody is yet subscribed");
     }
 
     @Override
@@ -69,10 +72,11 @@ public class RedirectPublisher implements RedirectService<BasicRequestWrapper, F
                     semaphore.release();
                 });
             } else {
-                throw new RuntimeException("Exceeded number of allowed subscribers ");
+                throw new MissingResourceException("Exceeded number of allowed subscribers ", RedirectPublisher.class.getName(), "eventSubscribers");
             }
         } catch (NullPointerException npe) {
-            // do nothing
+            // when we stop service - semaphore will be set to null, since we don't want to add more subscribers
+            // to allow service to stop normally
         }
     }
 }

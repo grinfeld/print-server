@@ -1,7 +1,7 @@
 package com.mikerusoft.redirect.to.stream.publisher;
 
 import com.mikerusoft.redirect.to.stream.model.BasicRequestWrapper;
-import com.mikerusoft.redirect.to.stream.model.HttpRequestWrapper;
+import com.mikerusoft.redirect.to.stream.publisher.http.model.HttpRequestWrapper;
 import com.mikerusoft.redirect.to.stream.publisher.http.PublishDataController;
 import com.mikerusoft.redirect.to.stream.services.RedirectService;
 import io.micronaut.http.HttpRequest;

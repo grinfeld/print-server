@@ -1,7 +1,7 @@
 package com.mikerusoft.redirect.to.stream.services;
 
 import com.mikerusoft.redirect.to.stream.model.BasicRequestWrapper;
-import com.mikerusoft.redirect.to.stream.model.HttpRequestWrapper;
+import com.mikerusoft.redirect.to.stream.publisher.http.model.HttpRequestWrapper;
 import io.micronaut.test.annotation.MicronautTest;
 import io.reactivex.Flowable;
 import io.reactivex.subscribers.TestSubscriber;
