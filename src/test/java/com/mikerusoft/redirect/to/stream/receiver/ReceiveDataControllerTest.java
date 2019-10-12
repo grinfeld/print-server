@@ -1,5 +1,6 @@
 package com.mikerusoft.redirect.to.stream.receiver;
 
+import com.mikerusoft.redirect.to.stream.model.BasicRequestWrapper;
 import com.mikerusoft.redirect.to.stream.model.HttpRequestWrapper;
 import com.mikerusoft.redirect.to.stream.services.RedirectService;
 import io.micronaut.context.annotation.Primary;
@@ -36,11 +37,11 @@ class ReceiveDataControllerTest {
     private RxHttpClient client;
 
     @Inject
-    private RedirectService<HttpRequestWrapper, FlowableOnSubscribe<HttpRequestWrapper>> service;
+    private RedirectService<BasicRequestWrapper, FlowableOnSubscribe<BasicRequestWrapper>> service;
 
     @Primary
     @MockBean(RedirectService.class)
-    RedirectService<String, FlowableOnSubscribe<HttpRequestWrapper>> service() {
+    RedirectService<String, FlowableOnSubscribe<BasicRequestWrapper>> service() {
         return mock(RedirectService.class);
     }
 

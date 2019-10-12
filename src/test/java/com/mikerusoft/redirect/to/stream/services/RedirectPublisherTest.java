@@ -1,5 +1,6 @@
 package com.mikerusoft.redirect.to.stream.services;
 
+import com.mikerusoft.redirect.to.stream.model.BasicRequestWrapper;
 import com.mikerusoft.redirect.to.stream.model.HttpRequestWrapper;
 import io.micronaut.test.annotation.MicronautTest;
 import io.reactivex.Flowable;
@@ -15,13 +16,13 @@ import java.util.concurrent.TimeUnit;
 class RedirectPublisherTest {
 
     @Inject
-    private RedirectService<HttpRequestWrapper, Flowable<HttpRequestWrapper>> service;
+    private RedirectService<BasicRequestWrapper, Flowable<BasicRequestWrapper>> service;
 
     @Test
     @Timeout(value = 100L, unit = TimeUnit.MILLISECONDS)
     void when1EventEmitted_expected1Event() throws Exception {
-        Flowable<HttpRequestWrapper> retrieve = service.subscriber();
-        TestSubscriber<HttpRequestWrapper> expected = retrieve.test();
+        Flowable<BasicRequestWrapper> retrieve = service.subscriber();
+        TestSubscriber<BasicRequestWrapper> expected = retrieve.test();
 
         service.emit(HttpRequestWrapper.builder().method("GET").uri("/bla/bla").build());
 
@@ -34,8 +35,8 @@ class RedirectPublisherTest {
     @Test
     @Timeout(value = 100L, unit = TimeUnit.MILLISECONDS)
     void when2EventsEmitted_expected2Events() throws Exception {
-        Flowable<HttpRequestWrapper> retrieve = service.subscriber();
-        TestSubscriber<HttpRequestWrapper> expected = retrieve.test();
+        Flowable<BasicRequestWrapper> retrieve = service.subscriber();
+        TestSubscriber<BasicRequestWrapper> expected = retrieve.test();
 
         service.emit(HttpRequestWrapper.builder().method("GET").uri("/for/get").build());
         service.emit(HttpRequestWrapper.builder().method("POST").uri("/for/post").build());
@@ -52,8 +53,8 @@ class RedirectPublisherTest {
     @Test
     @Timeout(value = 100L, unit = TimeUnit.MILLISECONDS)
     void withoutSleep_whenNoEventsEmitted_expectedEmptyResult() throws Exception {
-        Flowable<HttpRequestWrapper> retrieve = service.subscriber();
-        TestSubscriber<HttpRequestWrapper> expected = retrieve.test();
+        Flowable<BasicRequestWrapper> retrieve = service.subscriber();
+        TestSubscriber<BasicRequestWrapper> expected = retrieve.test();
 
         expected.assertSubscribed();
         expected.assertNoErrors();
@@ -63,8 +64,8 @@ class RedirectPublisherTest {
     @Test
     @Timeout(value = 200L, unit = TimeUnit.MILLISECONDS)
     void withSleep_whenNoEventsEmitted_expectedEmptyResult() throws Exception {
-        Flowable<HttpRequestWrapper> retrieve = service.subscriber();
-        TestSubscriber<HttpRequestWrapper> expected = retrieve.test();
+        Flowable<BasicRequestWrapper> retrieve = service.subscriber();
+        TestSubscriber<BasicRequestWrapper> expected = retrieve.test();
 
         Thread.sleep(100L); // let's sleep, to ensure that nothing happens
 
