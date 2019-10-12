@@ -66,14 +66,14 @@ class PublishDataControllerTest {
         Flowable<HttpRequestWrapper> retrieve = client.jsonStream(HttpRequest.GET("/all"), HttpRequestWrapper.class);
         Executors.newSingleThreadScheduledExecutor().schedule(() -> {
             service.emit(new BasicRequestWrapper(null, "staaaam body"));
-            service.emit(HttpRequestWrapper.builder().method("POST").uri("somepath/1").build());
+            service.emit(HttpRequestWrapper.builder().body("body").method("POST").uri("somepath/1").build());
         },
         300L, TimeUnit.MILLISECONDS);
         Thread.sleep(100L);
         List<HttpRequestWrapper> reqs = retrieve.buffer(1).blockingFirst();
         assertThat(reqs).isNotNull().hasSize(1)
             .containsExactly(
-                HttpRequestWrapper.builder().method("POST").uri("somepath/1").build()
+                HttpRequestWrapper.builder().body("body").method("POST").uri("somepath/1").build()
             )
         ;
     }
