@@ -29,8 +29,8 @@ public class KafkaRequestWrapper<T> extends BasicRequestWrapper<T> {
         this.topic = topic;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static <T>  Builder<T> builder() {
+        return new Builder<T>();
     }
 
     public static class Builder<T> {
@@ -43,14 +43,14 @@ public class KafkaRequestWrapper<T> extends BasicRequestWrapper<T> {
         private String timestampType;
         private long timestamp;
 
-        public Builder headers(Map<String, List<String>> headers) { this.headers = headers; return this; }
-        public Builder body(T body) { this.body = body; return this;}
-        public Builder key(String key) { this.key = key; return this;}
-        public Builder topic(String topic) { this.topic = topic; return this;}
-        public Builder offset(long offset) { this.offset = offset; return this; }
-        public Builder partition(int partition) { this.partition = partition; return this; }
-        public Builder timestampType(String timestampType) { this.timestampType = timestampType; return this; }
-        public Builder timestamp(long timestamp) { this.timestamp = timestamp; return this; }
+        public Builder<T> headers(Map<String, List<String>> headers) { this.headers = headers; return this; }
+        public Builder<T> body(T body) { this.body = body; return this;}
+        public Builder<T> key(String key) { this.key = key; return this;}
+        public Builder<T> topic(String topic) { this.topic = topic; return this;}
+        public Builder<T> offset(long offset) { this.offset = offset; return this; }
+        public Builder<T> partition(int partition) { this.partition = partition; return this; }
+        public Builder<T> timestampType(String timestampType) { this.timestampType = timestampType; return this; }
+        public Builder<T> timestamp(long timestamp) { this.timestamp = timestamp; return this; }
 
         public KafkaRequestWrapper<T> build() {
             return new KafkaRequestWrapper<T>(headers, body, key, topic, offset, partition, timestampType, timestamp);

@@ -5,7 +5,6 @@ import com.mikerusoft.redirect.to.stream.subscriber.kafka.model.KafkaRequestWrap
 import com.mikerusoft.redirect.to.stream.services.RedirectService;
 import com.mikerusoft.redirect.to.stream.utils.Utils;
 import io.micronaut.configuration.kafka.annotation.OffsetReset;
-import io.micronaut.configuration.kafka.processor.KafkaConsumerProcessor;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.runtime.ApplicationConfiguration;
@@ -15,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.PartitionInfo;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.record.TimestampType;
@@ -28,6 +29,7 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -36,22 +38,24 @@ import java.util.stream.StreamSupport;
 @Slf4j
 public class KafkaConsumerSubscriber implements Closeable {
 
-    private KafkaConsumerProcessor kafkaProcessor;
     private final ExecutorService executorService;
     private final ApplicationConfiguration applicationConfiguration;
     private final Map<String, Consumer> consumers = new ConcurrentHashMap<>();
     private final RedirectService<BasicRequestWrapper, FlowableOnSubscribe<BasicRequestWrapper>> service;
     private final String bootstrapServers;
+    private final long timeoutForSubscribe;
 
     public KafkaConsumerSubscriber(@Named(TaskExecutors.MESSAGE_CONSUMER) ExecutorService executorService,
                                    ApplicationConfiguration applicationConfiguration,
                                    RedirectService<BasicRequestWrapper, FlowableOnSubscribe<BasicRequestWrapper>> service,
-                                   @Value("${kafka.bootstrap.servers}") String bootstrapServers
+                                   @Value("${kafka.bootstrap.servers}") String bootstrapServers,
+                                   @Value("${kafka.consumer.subscribe.timeout:10000}") long timeoutForSubscribe
     ) {
         this.executorService = executorService;
         this.applicationConfiguration = applicationConfiguration;
         this.service = service;
         this.bootstrapServers = bootstrapServers;
+        this.timeoutForSubscribe = timeoutForSubscribe;
     }
 
     public String subscribe(String topic, String groupId, Properties props) {
@@ -79,29 +83,8 @@ public class KafkaConsumerSubscriber implements Closeable {
     }
 
     private void startConsumer(Consumer<?, ?> kafkaConsumer, String clientId) {
-        Exception original = null;
-        var timeout = 0;
+
         var pollTimeout = Integer.MAX_VALUE;
-
-        var workUntil = System.currentTimeMillis() + timeout;
-        var currentTime = System.currentTimeMillis();
-        var ready = false;
-
-        // trying to subscribe for latest partition
-        while (!ready && workUntil < currentTime) {
-            try {
-                var assignments = kafkaConsumer.assignment();
-                kafkaConsumer.seekToEnd(assignments);
-                ready = true;
-            } catch (IllegalStateException ise) {
-                original = ise;
-            }
-            currentTime = System.currentTimeMillis();
-        }
-
-        if (!ready) {
-            Utils.rethrowRuntime(original);
-        }
 
         while (consumers.containsKey(clientId)) {
             var polled = kafkaConsumer.poll(Duration.ofMillis(pollTimeout));
@@ -122,6 +105,43 @@ public class KafkaConsumerSubscriber implements Closeable {
                     // do nothing - let's continue
                 }
             });
+        }
+    }
+
+    private void assignToPartition(Consumer<?, ?> kafkaConsumer, String topic) {
+        Exception original = null;
+        var currentTime = System.currentTimeMillis();
+        var workUntil = currentTime + timeoutForSubscribe;
+
+        var ready = false;
+
+        // trying to subscribe for latest partition
+        while (!ready && currentTime < workUntil) {
+            try {
+                List<PartitionInfo> partitionInfos = kafkaConsumer.partitionsFor(topic);
+                for (PartitionInfo pi : partitionInfos) {
+                    try {
+                        kafkaConsumer.seekToEnd(Collections.singletonList(new TopicPartition(topic, pi.partition())));
+                    } catch (IllegalStateException ise) {
+                        if (Utils.isEmptyString(ise.getMessage()) || !ise.getMessage().startsWith("No current assignment for partition")) {
+                            Utils.rethrowRuntime(ise);
+                        }
+                    }
+                }
+                ready = true;
+            } catch (Exception e) {
+                original = e;
+                try {
+                    TimeUnit.MILLISECONDS.sleep(10);
+                } catch (InterruptedException ignore) {
+                    // ignoring InterruptedException
+                }
+            }
+            currentTime = System.currentTimeMillis();
+        }
+
+        if (!ready) {
+            Utils.rethrowRuntime(original);
         }
     }
 
@@ -147,6 +167,7 @@ public class KafkaConsumerSubscriber implements Closeable {
         return consumers.computeIfAbsent(clientId, s -> {
             var kafkaConsumer = new KafkaConsumer<byte[], byte[]>(groupProps);
             kafkaConsumer.subscribe(Collections.singletonList(topic));
+            assignToPartition(kafkaConsumer, topic);
             return kafkaConsumer;
         });
     }

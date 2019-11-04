@@ -68,6 +68,7 @@ public class RedirectPublisher implements RedirectService<BasicRequestWrapper, F
             if (semaphore.tryAcquire()) {
                 this.emitters.put(emitter.hashCode(), emitter);
                 emitter.setCancellable(() -> {
+                    FlowableEmitter<BasicRequestWrapper> f = emitters.get(emitter.hashCode());
                     emitters.remove(emitter.hashCode());
                     semaphore.release();
                 });

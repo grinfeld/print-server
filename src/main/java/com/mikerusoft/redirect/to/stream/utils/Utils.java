@@ -12,4 +12,17 @@ public class Utils {
 
         throw new RuntimeException(t);
     }
+
+    public static RuntimeException generateRuntime(Throwable original) {
+        if (original instanceof Error)
+            throw (Error)original;
+        else if (original instanceof RuntimeException)
+            return  (RuntimeException)original;
+
+        return new RuntimeException(original);
+    }
+
+    public static boolean isEmptyString(String str) {
+        return str == null || str.isEmpty();
+    }
 }
