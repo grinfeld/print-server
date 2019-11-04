@@ -1,4 +1,4 @@
-package com.mikerusoft.redirect.to.stream.publisher.http.model;
+package com.mikerusoft.redirect.to.stream.subscriber.http.model;
 
 import com.mikerusoft.redirect.to.stream.model.BasicRequestWrapper;
 import lombok.*;
@@ -9,7 +9,7 @@ import java.util.Map;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @Data
-public class HttpRequestWrapper extends BasicRequestWrapper {
+public class HttpRequestWrapper extends BasicRequestWrapper<String> {
 
     private HttpRequestWrapper(String uri, Map<String, List<String>> headers, Map<String, List<String>> params, String method, String body, Map<String, String> cookies) {
         super(headers, body);

@@ -1,7 +1,7 @@
-package com.mikerusoft.redirect.to.stream.publisher.http;
+package com.mikerusoft.redirect.to.stream.subscriber.http;
 
 import com.mikerusoft.redirect.to.stream.model.BasicRequestWrapper;
-import com.mikerusoft.redirect.to.stream.publisher.http.model.HttpRequestWrapper;
+import com.mikerusoft.redirect.to.stream.subscriber.http.model.HttpRequestWrapper;
 import com.mikerusoft.redirect.to.stream.services.RedirectService;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
@@ -14,12 +14,12 @@ import javax.inject.Inject;
 
 @Slf4j
 @Controller("/retrieve/http")
-public class PublishDataController {
+public class HttpSubscriberController {
 
     private RedirectService<BasicRequestWrapper, Flowable<BasicRequestWrapper>> service;
 
     @Inject
-    public PublishDataController(RedirectService<BasicRequestWrapper, Flowable<BasicRequestWrapper>> service) {
+    public HttpSubscriberController(RedirectService<BasicRequestWrapper, Flowable<BasicRequestWrapper>> service) {
         this.service = service;
     }
 

@@ -1,4 +1,4 @@
-package com.mikerusoft.redirect.to.stream.publisher.kafka.model;
+package com.mikerusoft.redirect.to.stream.subscriber.kafka.model;
 
 import com.mikerusoft.redirect.to.stream.model.BasicRequestWrapper;
 import lombok.Data;
@@ -11,7 +11,7 @@ import java.util.Map;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @Data
-public class KafkaRequestWrapper extends BasicRequestWrapper {
+public class KafkaRequestWrapper<T> extends BasicRequestWrapper<T> {
     private String key;
     private long offset;
     private int partition;
@@ -19,7 +19,7 @@ public class KafkaRequestWrapper extends BasicRequestWrapper {
     private long timestamp;
     private String topic;
 
-    public KafkaRequestWrapper(Map<String, List<String>> headers, String body, String key, String topic, long offset, int partition, String timestampType, long timestamp) {
+    public KafkaRequestWrapper(Map<String, List<String>> headers, T body, String key, String topic, long offset, int partition, String timestampType, long timestamp) {
         super(headers, body);
         this.key = key;
         this.offset = offset;
@@ -33,9 +33,9 @@ public class KafkaRequestWrapper extends BasicRequestWrapper {
         return new Builder();
     }
 
-    public static class Builder {
+    public static class Builder<T> {
         private Map<String, List<String>> headers;
-        private String body;
+        private T body;
         private String key;
         private String topic;
         private long offset;
@@ -44,7 +44,7 @@ public class KafkaRequestWrapper extends BasicRequestWrapper {
         private long timestamp;
 
         public Builder headers(Map<String, List<String>> headers) { this.headers = headers; return this; }
-        public Builder body(String body) { this.body = body; return this;}
+        public Builder body(T body) { this.body = body; return this;}
         public Builder key(String key) { this.key = key; return this;}
         public Builder topic(String topic) { this.topic = topic; return this;}
         public Builder offset(long offset) { this.offset = offset; return this; }
@@ -52,8 +52,8 @@ public class KafkaRequestWrapper extends BasicRequestWrapper {
         public Builder timestampType(String timestampType) { this.timestampType = timestampType; return this; }
         public Builder timestamp(long timestamp) { this.timestamp = timestamp; return this; }
 
-        public KafkaRequestWrapper build() {
-            return new KafkaRequestWrapper(headers, body, key, topic, offset, partition, timestampType, timestamp);
+        public KafkaRequestWrapper<T> build() {
+            return new KafkaRequestWrapper<T>(headers, body, key, topic, offset, partition, timestampType, timestamp);
         }
     }
 }

@@ -10,7 +10,7 @@ import java.util.Map;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class BasicRequestWrapper {
+public class BasicRequestWrapper<T> {
     private Map<String, List<String>> headers;
-    private String body;
+    private T body;
 }

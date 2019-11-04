@@ -1,8 +1,8 @@
-package com.mikerusoft.redirect.to.stream.publisher;
+package com.mikerusoft.redirect.to.stream.subscriber.http;
 
 import com.mikerusoft.redirect.to.stream.model.BasicRequestWrapper;
-import com.mikerusoft.redirect.to.stream.publisher.http.model.HttpRequestWrapper;
-import com.mikerusoft.redirect.to.stream.publisher.http.PublishDataController;
+import com.mikerusoft.redirect.to.stream.subscriber.http.model.HttpRequestWrapper;
+import com.mikerusoft.redirect.to.stream.subscriber.http.HttpSubscriberController;
 import com.mikerusoft.redirect.to.stream.services.RedirectService;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.client.RxStreamingHttpClient;
@@ -27,7 +27,7 @@ class PublishDataControllerMultiClientTest {
     private RedirectService<BasicRequestWrapper, FlowableOnSubscribe<BasicRequestWrapper>> service;
 
     @Inject
-    private PublishDataController controller;
+    private HttpSubscriberController controller;
 
     @Inject
     @Client("/retrieve/http")

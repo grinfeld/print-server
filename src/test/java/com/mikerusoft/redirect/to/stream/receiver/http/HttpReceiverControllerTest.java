@@ -1,7 +1,7 @@
-package com.mikerusoft.redirect.to.stream.receiver;
+package com.mikerusoft.redirect.to.stream.receiver.http;
 
 import com.mikerusoft.redirect.to.stream.model.BasicRequestWrapper;
-import com.mikerusoft.redirect.to.stream.publisher.http.model.HttpRequestWrapper;
+import com.mikerusoft.redirect.to.stream.subscriber.http.model.HttpRequestWrapper;
 import com.mikerusoft.redirect.to.stream.services.RedirectService;
 import io.micronaut.context.annotation.Primary;
 import io.micronaut.http.*;
@@ -24,13 +24,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.mikerusoft.redirect.to.stream.receiver.ReceiveDataControllerTest.Assertions.*;
+import static com.mikerusoft.redirect.to.stream.receiver.http.HttpReceiverControllerTest.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @MicronautTest
-class ReceiveDataControllerTest {
+class HttpReceiverControllerTest {
 
     @Inject
     @Client("/")

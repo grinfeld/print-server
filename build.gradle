@@ -75,6 +75,7 @@ dependencies {
     testCompile "org.apache.kafka:kafka-clients:$kafkaClientVersion:test"
     testCompile "org.apache.kafka:kafka_$kafkaVersion:$kafkaClientVersion"
     testCompile "org.apache.kafka:kafka_$kafkaVersion:$kafkaClientVersion:test"
+    testCompile "io.github.embeddedkafka:embedded-kafka_$kafkaVersion:$kafkaClientVersion"
 }
 
 test {
