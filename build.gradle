@@ -72,8 +72,6 @@ dependencies {
     testRuntime "org.junit.jupiter:junit-jupiter-engine"
     testCompile "org.mockito:mockito-core:$mockitoVersion"
     testCompile "org.assertj:assertj-core:$assertJVersion"
-    testCompile "org.apache.kafka:kafka-clients:$kafkaClientVersion"
-    testCompile "org.apache.kafka:kafka_$kafkaVersion:$kafkaClientVersion"
     testCompile "io.github.embeddedkafka:embedded-kafka_$kafkaVersion:$kafkaClientVersion"
 }
 
