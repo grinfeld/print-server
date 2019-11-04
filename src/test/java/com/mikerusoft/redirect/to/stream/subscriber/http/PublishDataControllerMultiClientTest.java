@@ -2,7 +2,6 @@ package com.mikerusoft.redirect.to.stream.subscriber.http;
 
 import com.mikerusoft.redirect.to.stream.model.BasicRequestWrapper;
 import com.mikerusoft.redirect.to.stream.subscriber.http.model.HttpRequestWrapper;
-import com.mikerusoft.redirect.to.stream.subscriber.http.HttpSubscriberController;
 import com.mikerusoft.redirect.to.stream.services.RedirectService;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.client.RxStreamingHttpClient;
@@ -15,7 +14,6 @@ import org.junit.jupiter.api.Timeout;
 
 import javax.inject.Inject;
 
-import java.util.List;
 import java.util.concurrent.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,7 +44,7 @@ class PublishDataControllerMultiClientTest {
             service.emit(HttpRequestWrapper.builder().method("GET").uri("somepath/0").build());
             service.emit(HttpRequestWrapper.builder().method("POST").uri("somepath/1").build());
         },
-        300L, TimeUnit.MILLISECONDS);
+        500L, TimeUnit.MILLISECONDS);
         var executors = Executors.newFixedThreadPool(2);
         executors.submit(() -> assertRequest(retrieve1));
         executors.submit(() -> assertRequest(retrieve2));
