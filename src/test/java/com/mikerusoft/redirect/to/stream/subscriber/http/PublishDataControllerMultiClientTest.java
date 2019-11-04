@@ -38,7 +38,7 @@ class PublishDataControllerMultiClientTest {
     private RxStreamingHttpClient client2;
 
     @Test
-    @Timeout(value = 1, unit = TimeUnit.SECONDS)
+    @Timeout(value = 2, unit = TimeUnit.SECONDS)
     void when2SubscribersAndPublished2Request_expected2ResponseForEverySubscriber() throws Exception {
         Flowable<HttpRequestWrapper> retrieve1 = client1.jsonStream(HttpRequest.GET("/all"), HttpRequestWrapper.class);
         Flowable<HttpRequestWrapper> retrieve2 = client2.jsonStream(HttpRequest.GET("/all"), HttpRequestWrapper.class);
