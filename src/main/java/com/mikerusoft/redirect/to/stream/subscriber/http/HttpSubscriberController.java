@@ -32,7 +32,7 @@ public class HttpSubscriberController {
     public Flowable<HttpRequestWrapper> getByUri(@PathVariable("uri") String uri) {
         if (uri == null || uri.isEmpty())
             throw new IllegalArgumentException();
-        String checkedUri = "/uri/" + uri;
+        var checkedUri = "/uri/" + uri;
         return getFlowable()
             .filter(e -> checkedUri.equals(e.getUri()));
     }

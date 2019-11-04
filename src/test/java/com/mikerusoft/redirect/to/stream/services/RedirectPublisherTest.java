@@ -4,7 +4,6 @@ import com.mikerusoft.redirect.to.stream.model.BasicRequestWrapper;
 import com.mikerusoft.redirect.to.stream.subscriber.http.model.HttpRequestWrapper;
 import io.micronaut.test.annotation.MicronautTest;
 import io.reactivex.Flowable;
-import io.reactivex.subscribers.TestSubscriber;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -23,8 +22,8 @@ class RedirectPublisherTest {
     @Test
     @Timeout(value = 100L, unit = TimeUnit.MILLISECONDS)
     void when1EventEmitted_expected1Event() throws Exception {
-        Flowable<BasicRequestWrapper> retrieve = service.subscriber();
-        TestSubscriber<BasicRequestWrapper> expected = retrieve.test();
+        var retrieve = service.subscriber();
+        var expected = retrieve.test();
 
         service.emit(HttpRequestWrapper.builder().method("GET").uri("/bla/bla").build());
 
@@ -37,8 +36,8 @@ class RedirectPublisherTest {
     @Test
     @Timeout(value = 100L, unit = TimeUnit.MILLISECONDS)
     void when2EventsEmitted_expected2Events() throws Exception {
-        Flowable<BasicRequestWrapper> retrieve = service.subscriber();
-        TestSubscriber<BasicRequestWrapper> expected = retrieve.test();
+        var retrieve = service.subscriber();
+        var expected = retrieve.test();
 
         service.emit(HttpRequestWrapper.builder().method("GET").uri("/for/get").build());
         service.emit(HttpRequestWrapper.builder().method("POST").uri("/for/post").build());
@@ -55,8 +54,8 @@ class RedirectPublisherTest {
     @Test
     @Timeout(value = 100L, unit = TimeUnit.MILLISECONDS)
     void withoutSleep_whenNoEventsEmitted_expectedEmptyResult() throws Exception {
-        Flowable<BasicRequestWrapper> retrieve = service.subscriber();
-        TestSubscriber<BasicRequestWrapper> expected = retrieve.test();
+        var retrieve = service.subscriber();
+        var expected = retrieve.test();
 
         expected.assertSubscribed();
         expected.assertNoErrors();
@@ -66,8 +65,8 @@ class RedirectPublisherTest {
     @Test
     @Timeout(value = 200L, unit = TimeUnit.MILLISECONDS)
     void withSleep_whenNoEventsEmitted_expectedEmptyResult() throws Exception {
-        Flowable<BasicRequestWrapper> retrieve = service.subscriber();
-        TestSubscriber<BasicRequestWrapper> expected = retrieve.test();
+        var retrieve = service.subscriber();
+        var expected = retrieve.test();
 
         Thread.sleep(100L); // let's sleep, to ensure that nothing happens
 

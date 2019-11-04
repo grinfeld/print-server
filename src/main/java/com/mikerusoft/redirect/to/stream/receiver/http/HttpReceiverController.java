@@ -51,9 +51,9 @@ public class HttpReceiverController {
     }
 
     private static HttpRequestWrapper extractRequest(HttpRequest<?> request, String body) {
-        Map<String, List<String>> headers = extractHeaders(request.getHeaders());
-        Map<String, List<String>> queryParams = extractQueryParams(request.getParameters());
-        Map<String, String> cookies = extractCookies(request);
+        var headers = extractHeaders(request.getHeaders());
+        var queryParams = extractQueryParams(request.getParameters());
+        var cookies = extractCookies(request);
 
         return HttpRequestWrapper.builder().headers(headers).params(queryParams)
                 .cookies(cookies).method(request.getMethod().name())

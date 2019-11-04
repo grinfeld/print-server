@@ -28,6 +28,8 @@ version "$projectVersion"
 group "com.mikerusoft"
 
 apply plugin: "java"
+sourceCompatibility = 1.11
+targetCompatibility = 1.11
 apply plugin: "io.spring.dependency-management"
 apply plugin: "application"
 apply plugin: "com.github.johnrengelman.shadow"

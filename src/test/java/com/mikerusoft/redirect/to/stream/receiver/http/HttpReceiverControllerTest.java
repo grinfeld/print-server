@@ -49,16 +49,16 @@ class HttpReceiverControllerTest {
     @ParameterizedTest(name = " {0} without query params, expected method {1} received and service emitted data once")
     @CsvSource({"/receive/get/,GET"})
     void GET_withExactURI_whenNoParams_expectedRequestReceivedAndEmittedOnce(String uri, String method) {
-        ArgumentCaptor<HttpRequestWrapper> captor = ArgumentCaptor.forClass(HttpRequestWrapper.class);
-        MutableHttpRequest<String> request = mockReturnNothing(method, buildUri(uri, ""));
+        var captor = ArgumentCaptor.forClass(HttpRequestWrapper.class);
+        var request = mockReturnNothing(method, buildUri(uri, ""));
         request.contentType(MediaType.TEXT_PLAIN);
-        HttpResponse<?> response = client.toBlocking().exchange(request);
+        var response = client.toBlocking().exchange(request);
 
         assertHttpStatus(response, HttpStatus.OK.getCode());
 
         verify(service, times(1)).emit(captor.capture());
 
-        HttpRequestWrapper resultValue = captor.getValue();
+        var resultValue = captor.getValue();
         assertSimpleRequestWrapper(uri, method, null, resultValue);
     }
 
@@ -66,16 +66,16 @@ class HttpReceiverControllerTest {
     @ParameterizedTest(name = " {0} without query params, expected method {1} and params {2} received and service emitted data once")
     @CsvSource({"/receive/get/,GET,a=aaaa&b=bbbb"})
     void GET_withExactURI_whenParams_expectedRequestReceivedAndEmittedOnce(String uri, String method, String params) {
-        ArgumentCaptor<HttpRequestWrapper> captor = ArgumentCaptor.forClass(HttpRequestWrapper.class);
-        MutableHttpRequest<String> request = mockReturnNothing(method, buildUri(uri, params));
+        var captor = ArgumentCaptor.forClass(HttpRequestWrapper.class);
+        var request = mockReturnNothing(method, buildUri(uri, params));
         request.contentType(MediaType.TEXT_PLAIN);
-        HttpResponse<?> response = client.toBlocking().exchange(request);
+        var response = client.toBlocking().exchange(request);
 
         assertHttpStatus(response, HttpStatus.OK.getCode());
 
         verify(service, times(1)).emit(captor.capture());
 
-        HttpRequestWrapper resultValue = captor.getValue();
+        var resultValue = captor.getValue();
         assertRequestSimpleFields(resultValue, method, null, uri);
         assertQueryParams(resultValue.getParams(), params);
         assertThat(resultValue.getHeaders()).isNotEmpty();
@@ -85,16 +85,16 @@ class HttpReceiverControllerTest {
     @ParameterizedTest(name = " {0} without query params, expected method {1} received and service emitted data once")
     @CsvSource({"/receive/post/something/new,POST,body=stam", "/receive/put/something/new,PUT,body=stam"})
     void NonGet_withLongerURI_whenNoParams_expectedRequestReceivedAndEmittedOnce(String uri, String method, String body) {
-        ArgumentCaptor<HttpRequestWrapper> captor = ArgumentCaptor.forClass(HttpRequestWrapper.class);
-        MutableHttpRequest<String> request = mockReturnNothing(method, buildUri(uri, "")).body(body);
+        var captor = ArgumentCaptor.forClass(HttpRequestWrapper.class);
+        var request = mockReturnNothing(method, buildUri(uri, "")).body(body);
         request.contentType(MediaType.TEXT_PLAIN);
-        HttpResponse<?> response = client.toBlocking().exchange(request);
+        var response = client.toBlocking().exchange(request);
 
         assertHttpStatus(response, HttpStatus.OK.getCode());
 
         verify(service, times(1)).emit(captor.capture());
 
-        HttpRequestWrapper resultValue = captor.getValue();
+        var resultValue = captor.getValue();
         assertSimpleRequestWrapper(uri, method, body, resultValue);
     }
 
@@ -102,16 +102,16 @@ class HttpReceiverControllerTest {
     @ParameterizedTest(name = " {0} without query params, expected method {1}, body {3} and params {2} received and service emitted data once")
     @CsvSource({"/receive/post/,POST,a=aaaa&b=bbb,body=thebodyishere", "/receive/put/,PUT,a=aaaa&b=bbb,body=thebodyishere"})
     void NonGET_withExactURI_whenParamsAndBody_expectedRequestReceivedAndEmittedOnce(String uri, String method, String params, String body) {
-        ArgumentCaptor<HttpRequestWrapper> captor = ArgumentCaptor.forClass(HttpRequestWrapper.class);
-        MutableHttpRequest<String> request = mockReturnNothing(method, buildUri(uri, params)).body(body);
+        var captor = ArgumentCaptor.forClass(HttpRequestWrapper.class);
+        var request = mockReturnNothing(method, buildUri(uri, params)).body(body);
         request.contentType(MediaType.TEXT_PLAIN);
-        HttpResponse<?> response = client.toBlocking().exchange(request);
+        var response = client.toBlocking().exchange(request);
 
         assertHttpStatus(response, HttpStatus.OK.getCode());
 
         verify(service, times(1)).emit(captor.capture());
 
-        HttpRequestWrapper resultValue = captor.getValue();
+        var resultValue = captor.getValue();
         assertRequestSimpleFields(resultValue, method, body, uri);
         assertQueryParams(resultValue.getParams(), params);
         assertThat(resultValue.getHeaders()).isNotEmpty();
@@ -125,7 +125,7 @@ class HttpReceiverControllerTest {
     static class Assertions {
 
         static void assertQueryParams(Map<String, List<String>> actual, String expectedParams) {
-            Map<String, List<String>> expectedMap = Stream.of(expectedParams.split("&"))
+            var expectedMap = Stream.of(expectedParams.split("&"))
                     .map(s -> s.split("=")).filter(ar -> ar.length == 2)
                 .collect(Collectors.toMap(ar -> ar[0], ar -> Collections.singletonList(ar[1]), (k1, k2) -> k1));
             assertThat(actual).isNotNull().hasSize(expectedMap.size()).isEqualTo(expectedMap);
@@ -153,7 +153,7 @@ class HttpReceiverControllerTest {
 
 
     private static String buildUri(String uri, String queryParams) {
-        String params = "";
+        var params = "";
         if (queryParams != null && !queryParams.trim().isEmpty()) {
             params = "?" + queryParams;
         }

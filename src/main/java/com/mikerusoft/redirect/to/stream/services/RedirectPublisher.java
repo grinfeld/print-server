@@ -28,7 +28,7 @@ public class RedirectPublisher implements RedirectService<BasicRequestWrapper, F
         subscribers = subscribers <= 0 ? DEF_SUBSCRIBERS : subscribers;
         semaphore = new Semaphore(subscribers);
         emitters = new ConcurrentHashMap<>(subscribers);
-        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        var executor = Executors.newSingleThreadScheduledExecutor();
         executor.scheduleAtFixedRate(this::removeCanceled, 60, 60, TimeUnit.SECONDS);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             stop();

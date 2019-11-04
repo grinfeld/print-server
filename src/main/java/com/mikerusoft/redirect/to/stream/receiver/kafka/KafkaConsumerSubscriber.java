@@ -14,9 +14,7 @@ import io.reactivex.FlowableOnSubscribe;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.record.TimestampType;
@@ -57,9 +55,9 @@ public class KafkaConsumerSubscriber implements Closeable {
     }
 
     public String subscribe(String topic, String groupId, Properties props) {
-        Properties groupProps = createConsumerProperties(groupId, props);
-        String clientId = generateClientId(topic);
-        Consumer<?, ?> kafkaConsumer = initConsumer(topic, groupProps, clientId);
+        var groupProps = createConsumerProperties(groupId, props);
+        var clientId = generateClientId(topic);
+        var kafkaConsumer = initConsumer(topic, groupProps, clientId);
         executorService.submit(() -> startConsumer(kafkaConsumer, clientId));
         return clientId;
     }
@@ -70,7 +68,7 @@ public class KafkaConsumerSubscriber implements Closeable {
     }
 
     public void close(String clientId) {
-        Consumer removed = consumers.remove(clientId);
+        var removed = consumers.remove(clientId);
         if (removed != null) {
             try {
                 removed.close();
@@ -82,17 +80,17 @@ public class KafkaConsumerSubscriber implements Closeable {
 
     private void startConsumer(Consumer<?, ?> kafkaConsumer, String clientId) {
         Exception original = null;
-        long timeout = 0;
-        long pollTimeout = Integer.MAX_VALUE;
+        var timeout = 0;
+        var pollTimeout = Integer.MAX_VALUE;
 
-        long workUntil = System.currentTimeMillis() + timeout;
-        long currentTime = System.currentTimeMillis();
-        boolean ready = false;
+        var workUntil = System.currentTimeMillis() + timeout;
+        var currentTime = System.currentTimeMillis();
+        var ready = false;
 
         // trying to subscribe for latest partition
         while (!ready && workUntil < currentTime) {
             try {
-                Set<TopicPartition> assignments = kafkaConsumer.assignment();
+                var assignments = kafkaConsumer.assignment();
                 kafkaConsumer.seekToEnd(assignments);
                 ready = true;
             } catch (IllegalStateException ise) {
@@ -106,14 +104,14 @@ public class KafkaConsumerSubscriber implements Closeable {
         }
 
         while (consumers.containsKey(clientId)) {
-            ConsumerRecords<?, ?> polled = kafkaConsumer.poll(Duration.ofMillis(pollTimeout));
+            var polled = kafkaConsumer.poll(Duration.ofMillis(pollTimeout));
             if (polled.isEmpty()) {
                 continue;
             }
             polled.iterator().forEachRemaining(record -> {
                 try {
-                    TimestampType timestampType = record.timestampType();
-                    KafkaRequestWrapper request = KafkaRequestWrapper.builder()
+                    var timestampType = record.timestampType();
+                    var request = KafkaRequestWrapper.builder()
                             .key(deserializeKey(record.key())).body(deserializeValue(record.value()))
                             .headers(convertHeaders(record.headers())).offset(record.offset()).partition(record.partition())
                             .topic(record.topic()).timestamp(record.timestamp())
@@ -147,7 +145,7 @@ public class KafkaConsumerSubscriber implements Closeable {
 
     private Consumer<?, ?> initConsumer(String topic, Properties groupProps, String clientId) {
         return consumers.computeIfAbsent(clientId, s -> {
-            Consumer<?, ?> kafkaConsumer = new KafkaConsumer<byte[], byte[]>(groupProps);
+            var kafkaConsumer = new KafkaConsumer<byte[], byte[]>(groupProps);
             kafkaConsumer.subscribe(Collections.singletonList(topic));
             return kafkaConsumer;
         });
@@ -158,7 +156,7 @@ public class KafkaConsumerSubscriber implements Closeable {
     }
 
     private Properties createConsumerProperties(String groupId, Properties props) {
-        Properties groupProps = new Properties(Optional.ofNullable(props).orElse(new Properties()));
+        var groupProps = new Properties(Optional.ofNullable(props).orElse(new Properties()));
         groupProps.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         groupProps.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, OffsetReset.LATEST.name().toLowerCase());
         groupProps.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");

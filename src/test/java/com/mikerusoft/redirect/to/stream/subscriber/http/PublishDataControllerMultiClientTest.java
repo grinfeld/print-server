@@ -40,14 +40,14 @@ class PublishDataControllerMultiClientTest {
     @Test
     @Timeout(value = 2, unit = TimeUnit.SECONDS)
     void when2SubscribersAndPublished2Request_expected2ResponseForEverySubscriber() throws Exception {
-        Flowable<HttpRequestWrapper> retrieve1 = client1.jsonStream(HttpRequest.GET("/all"), HttpRequestWrapper.class);
-        Flowable<HttpRequestWrapper> retrieve2 = client2.jsonStream(HttpRequest.GET("/all"), HttpRequestWrapper.class);
+        var retrieve1 = client1.jsonStream(HttpRequest.GET("/all"), HttpRequestWrapper.class);
+        var retrieve2 = client2.jsonStream(HttpRequest.GET("/all"), HttpRequestWrapper.class);
         Executors.newSingleThreadScheduledExecutor().schedule(() -> {
             service.emit(HttpRequestWrapper.builder().method("GET").uri("somepath/0").build());
             service.emit(HttpRequestWrapper.builder().method("POST").uri("somepath/1").build());
         },
         300L, TimeUnit.MILLISECONDS);
-        ExecutorService executors = Executors.newFixedThreadPool(2);
+        var executors = Executors.newFixedThreadPool(2);
         executors.submit(() -> assertRequest(retrieve1));
         executors.submit(() -> assertRequest(retrieve2));
         executors.shutdown();
@@ -55,7 +55,7 @@ class PublishDataControllerMultiClientTest {
     }
 
     private static void assertRequest(Flowable<HttpRequestWrapper> retrieve) {
-        List<HttpRequestWrapper> reqs = retrieve.buffer(2).blockingFirst();
+        var reqs = retrieve.buffer(2).blockingFirst();
         assertThat(reqs).isNotNull().hasSize(2)
                 .containsExactly(
                         HttpRequestWrapper.builder().method("GET").uri("somepath/0").build(),

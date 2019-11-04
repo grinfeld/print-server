@@ -30,15 +30,15 @@ class KafkaConsumerProcessorAdapterTest {
     @Test
     @Disabled
     void testme() throws Exception {
-        EmbeddedK kafka = EmbeddedKafka.start(EmbeddedKafkaConfig.defaultConfig());
-        String clientId = kafkaProcessor.subscribe("test", "test", null);
-        Properties props = new Properties();
+        var kafka = EmbeddedKafka.start(EmbeddedKafkaConfig.defaultConfig());
+        var clientId = kafkaProcessor.subscribe("test", "test", null);
+        var props = new Properties();
         props.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:6001");
         props.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getName());
         props.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getName());
         Thread.sleep(1000L);
         KafkaProducer<byte[], byte[]> prod = new KafkaProducer<>(props);
-        RecordMetadata recordMetadata = prod.send(new ProducerRecord<>("test", "test".getBytes(StandardCharsets.UTF_8), "test1".getBytes(StandardCharsets.UTF_8))).get();
+        var recordMetadata = prod.send(new ProducerRecord<>("test", "test".getBytes(StandardCharsets.UTF_8), "test1".getBytes(StandardCharsets.UTF_8))).get();
         System.out.println();
         Thread.sleep(10000000L);
         kafkaProcessor.close(clientId);
