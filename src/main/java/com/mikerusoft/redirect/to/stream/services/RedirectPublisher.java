@@ -67,11 +67,7 @@ public class RedirectPublisher implements RedirectService<BasicRequestWrapper, F
         try {
             if (semaphore.tryAcquire()) {
                 this.emitters.put(emitter.hashCode(), emitter);
-                emitter.setCancellable(() -> {
-                    FlowableEmitter<BasicRequestWrapper> f = emitters.get(emitter.hashCode());
-                    emitters.remove(emitter.hashCode());
-                    semaphore.release();
-                });
+                emitter.setCancellable(() -> cancelEmitter(emitter));
             } else {
                 throw new MissingResourceException("Exceeded number of allowed subscribers ", RedirectPublisher.class.getName(), "eventSubscribers");
             }
@@ -79,5 +75,11 @@ public class RedirectPublisher implements RedirectService<BasicRequestWrapper, F
             // when we stop service - semaphore will be set to null, since we don't want to add more subscribers
             // to allow service to stop normally
         }
+    }
+
+    private void cancelEmitter(FlowableEmitter<BasicRequestWrapper> emitter) {
+        FlowableEmitter<BasicRequestWrapper> f = emitters.get(emitter.hashCode());
+        emitters.remove(emitter.hashCode());
+        semaphore.release();
     }
 }
