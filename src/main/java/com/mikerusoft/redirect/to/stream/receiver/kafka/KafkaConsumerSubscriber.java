@@ -110,10 +110,6 @@ public class KafkaConsumerSubscriber implements Closeable {
         }
     }
 
-    public boolean isConsumerSubscribed(String clientId) {
-        return consumers.containsKey(clientId) && consumers.get(clientId).getRight() != null && consumers.get(clientId).getRight();
-    }
-
     private void assignToPartition(Consumer<?, ?> kafkaConsumer, String topic) {
         Exception original = null;
         var currentTime = System.currentTimeMillis();
@@ -129,7 +125,7 @@ public class KafkaConsumerSubscriber implements Closeable {
                     try {
                         kafkaConsumer.seekToEnd(Collections.singletonList(new TopicPartition(topic, pi.partition())));
                     } catch (IllegalStateException ise) {
-                        if (Utils.isEmptyString(ise.getMessage()) || !ise.getMessage().startsWith("No current assignment for partition")) {
+                        if (Utils.isEmpty(ise.getMessage()) || !ise.getMessage().startsWith("No current assignment for partition")) {
                             Utils.rethrowRuntime(ise);
                         }
                     }

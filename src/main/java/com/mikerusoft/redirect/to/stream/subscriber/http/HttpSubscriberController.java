@@ -3,6 +3,7 @@ package com.mikerusoft.redirect.to.stream.subscriber.http;
 import com.mikerusoft.redirect.to.stream.model.BasicRequestWrapper;
 import com.mikerusoft.redirect.to.stream.subscriber.http.model.HttpRequestWrapper;
 import com.mikerusoft.redirect.to.stream.services.RedirectService;
+import com.mikerusoft.redirect.to.stream.utils.Utils;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
@@ -30,7 +31,7 @@ public class HttpSubscriberController {
 
     @Get(value = "/uri/{uri:.+}", produces = {MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON_STREAM})
     public Flowable<HttpRequestWrapper> getByUri(@PathVariable("uri") String uri) {
-        if (uri == null || uri.isEmpty())
+        if (Utils.isEmpty(uri))
             throw new IllegalArgumentException();
         var checkedUri = "/uri/" + uri;
         return getFlowable()
@@ -39,7 +40,7 @@ public class HttpSubscriberController {
 
     @Get(value = "/method/{method}", produces = {MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON_STREAM})
     public Flowable<HttpRequestWrapper> getByMethod(@PathVariable("method") String method) {
-        if (method == null || method.isEmpty())
+        if (Utils.isEmpty(method))
             throw new IllegalArgumentException();
         return getFlowable()
             .filter(e -> method.equalsIgnoreCase(e.getMethod()));
@@ -47,14 +48,14 @@ public class HttpSubscriberController {
 
     @Get(value = "/filter/{method}/{uri}", produces = {MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON_STREAM})
     public Flowable<HttpRequestWrapper> filter(@PathVariable("method") String method, @PathVariable("uri") String uri) {
-        if (method == null || method.isEmpty())
+        if (Utils.isEmpty(method))
             throw new IllegalArgumentException();
-        if (uri == null || uri.isEmpty())
+        if (Utils.isEmpty(uri))
             throw new IllegalArgumentException();
         return getFlowable()
             .filter(e -> method.equalsIgnoreCase(e.getMethod())).filter(e -> uri.equals(e.getUri()));
     }
-    
+
     private Flowable<HttpRequestWrapper> getFlowable() {
         return service.subscriber()
                 .filter(r -> r instanceof HttpRequestWrapper)

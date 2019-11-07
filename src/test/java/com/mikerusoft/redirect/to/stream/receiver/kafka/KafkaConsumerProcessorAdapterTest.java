@@ -73,7 +73,7 @@ class KafkaConsumerProcessorAdapterTest {
 
     @AfterAll
     void closeKafka() {
-        if (!Utils.isEmptyString(clientId)) {
+        if (!Utils.isEmpty(clientId)) {
             try { kafkaProcessor.close(clientId); } catch (Exception ignore) { /* do nothing */ }
         }
         try { kafka.stop(true); } catch (Exception ignore) { /* do nothing */ }

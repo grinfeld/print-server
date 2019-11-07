@@ -1,5 +1,7 @@
 package com.mikerusoft.redirect.to.stream.utils;
 
+import java.util.Map;
+
 public class Utils {
 
     private Utils() {}
@@ -13,16 +15,11 @@ public class Utils {
         throw new RuntimeException(t);
     }
 
-    public static RuntimeException generateRuntime(Throwable original) {
-        if (original instanceof Error)
-            throw (Error)original;
-        else if (original instanceof RuntimeException)
-            return  (RuntimeException)original;
-
-        return new RuntimeException(original);
+    public static boolean isEmpty(String str) {
+        return str == null || str.isEmpty();
     }
 
-    public static boolean isEmptyString(String str) {
-        return str == null || str.isEmpty();
+    public static <K, V> boolean isEmpty(Map<K, V> map) {
+        return map == null || map.isEmpty();
     }
 }

@@ -1,6 +1,7 @@
 package com.mikerusoft.redirect.to.stream.services;
 
 import com.mikerusoft.redirect.to.stream.model.BasicRequestWrapper;
+import com.mikerusoft.redirect.to.stream.utils.Utils;
 import io.micronaut.context.annotation.Value;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
@@ -51,7 +52,7 @@ public class RedirectPublisher implements RedirectService<BasicRequestWrapper, F
 
     @Override
     public void emit(BasicRequestWrapper element) {
-        if (emitters != null && !emitters.isEmpty())
+        if (Utils.isEmpty(emitters))
             emitters.values().stream().filter(e -> !e.isCancelled()).forEach(e -> e.onNext(element));
         else
             log.debug("nobody is yet subscribed");
@@ -78,7 +79,7 @@ public class RedirectPublisher implements RedirectService<BasicRequestWrapper, F
     }
 
     private void cancelEmitter(FlowableEmitter<BasicRequestWrapper> emitter) {
-        FlowableEmitter<BasicRequestWrapper> f = emitters.get(emitter.hashCode());
+        FlowableEmitter<BasicRequestWrapper> flowable = emitters.get(emitter.hashCode());
         emitters.remove(emitter.hashCode());
         semaphore.release();
     }
