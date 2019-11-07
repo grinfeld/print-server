@@ -42,7 +42,9 @@ class HttpReceiverControllerTest {
     @Primary
     @MockBean(RedirectService.class)
     RedirectService<String, FlowableOnSubscribe<BasicRequestWrapper>> service() {
-        return mock(RedirectService.class);
+        @SuppressWarnings("unchecked")
+        RedirectService<String, FlowableOnSubscribe<BasicRequestWrapper>> service = mock(RedirectService.class);
+        return service;
     }
 
     @DisplayName("when sending request to exact  ")

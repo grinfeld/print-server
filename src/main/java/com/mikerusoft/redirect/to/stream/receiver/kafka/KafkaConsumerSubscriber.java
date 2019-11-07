@@ -3,6 +3,7 @@ package com.mikerusoft.redirect.to.stream.receiver.kafka;
 import com.mikerusoft.redirect.to.stream.model.BasicRequestWrapper;
 import com.mikerusoft.redirect.to.stream.subscriber.kafka.model.KafkaRequestWrapper;
 import com.mikerusoft.redirect.to.stream.services.RedirectService;
+import com.mikerusoft.redirect.to.stream.utils.Pair;
 import com.mikerusoft.redirect.to.stream.utils.Utils;
 import io.micronaut.configuration.kafka.annotation.OffsetReset;
 import io.micronaut.context.annotation.Requires;
@@ -40,7 +41,7 @@ public class KafkaConsumerSubscriber implements Closeable {
 
     private final ExecutorService executorService;
     private final ApplicationConfiguration applicationConfiguration;
-    private final Map<String, Consumer> consumers = new ConcurrentHashMap<>();
+    private final Map<String, Pair<Consumer<?,?>, Boolean>> consumers = new ConcurrentHashMap<>();
     private final RedirectService<BasicRequestWrapper, FlowableOnSubscribe<BasicRequestWrapper>> service;
     private final String bootstrapServers;
     private final long timeoutForSubscribe;
@@ -75,7 +76,7 @@ public class KafkaConsumerSubscriber implements Closeable {
         var removed = consumers.remove(clientId);
         if (removed != null) {
             try {
-                removed.close();
+                removed.getLeft().close();
             } catch (Exception e) {
                 log.warn("Failed to close consumer '{}'", clientId);
             }
@@ -83,10 +84,10 @@ public class KafkaConsumerSubscriber implements Closeable {
     }
 
     private void startConsumer(Consumer<?, ?> kafkaConsumer, String clientId) {
-
         var pollTimeout = Integer.MAX_VALUE;
 
         while (consumers.containsKey(clientId)) {
+            consumers.put(clientId, Pair.of(kafkaConsumer, true));
             var polled = kafkaConsumer.poll(Duration.ofMillis(pollTimeout));
             if (polled.isEmpty()) {
                 continue;
@@ -105,7 +106,12 @@ public class KafkaConsumerSubscriber implements Closeable {
                     // do nothing - let's continue
                 }
             });
+            consumers.put(clientId, Pair.of(kafkaConsumer, false));
         }
+    }
+
+    public boolean isConsumerSubscribed(String clientId) {
+        return consumers.containsKey(clientId) && consumers.get(clientId).getRight() != null && consumers.get(clientId).getRight();
     }
 
     private void assignToPartition(Consumer<?, ?> kafkaConsumer, String topic) {
@@ -163,13 +169,13 @@ public class KafkaConsumerSubscriber implements Closeable {
         return key instanceof byte[] ? new String((byte[])key) : String.valueOf(key);
     }
 
-    private Consumer<?, ?> initConsumer(String topic, Properties groupProps, String clientId) {
+    private Consumer<?,?> initConsumer(String topic, Properties groupProps, String clientId) {
         return consumers.computeIfAbsent(clientId, s -> {
             var kafkaConsumer = new KafkaConsumer<byte[], byte[]>(groupProps);
             kafkaConsumer.subscribe(Collections.singletonList(topic));
             assignToPartition(kafkaConsumer, topic);
-            return kafkaConsumer;
-        });
+            return Pair.of(kafkaConsumer, false);
+        }).getLeft();
     }
 
     private String generateClientId(String topic) {
