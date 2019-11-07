@@ -3,7 +3,6 @@ package com.mikerusoft.redirect.to.stream.receiver.http;
 import com.mikerusoft.redirect.to.stream.model.BasicRequestWrapper;
 import com.mikerusoft.redirect.to.stream.subscriber.http.model.HttpRequestWrapper;
 import com.mikerusoft.redirect.to.stream.services.RedirectService;
-import com.mikerusoft.redirect.to.stream.utils.Pair;
 import io.micronaut.http.*;
 import io.micronaut.http.annotation.*;
 import io.reactivex.FlowableOnSubscribe;
@@ -64,8 +63,7 @@ public class HttpReceiverController {
 
     private static Map<String, String> extractCookies(HttpRequest<?> request) {
         return StreamSupport.stream(request.getCookies().spliterator(), false)
-            .map(e -> Pair.of(e.getKey(), String.valueOf(e.getValue())))
-            .collect(Collectors.toMap(Pair::getKey, Pair::getValue, (k1, k2) -> k1));
+            .collect(Collectors.toMap(Map.Entry::getKey, e -> String.valueOf(e.getValue()), (k1, k2) -> k1));
     }
 
     private static Map<String, List<String>> extractHeaders(HttpHeaders httpHeaders) {
