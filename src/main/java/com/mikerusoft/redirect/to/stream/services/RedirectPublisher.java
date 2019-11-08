@@ -52,7 +52,7 @@ public class RedirectPublisher implements RedirectService<BasicRequestWrapper, F
 
     @Override
     public void emit(BasicRequestWrapper element) {
-        if (Utils.isEmpty(emitters))
+        if (!Utils.isEmpty(emitters))
             emitters.values().stream().filter(e -> !e.isCancelled()).forEach(e -> e.onNext(element));
         else
             log.debug("nobody is yet subscribed");
