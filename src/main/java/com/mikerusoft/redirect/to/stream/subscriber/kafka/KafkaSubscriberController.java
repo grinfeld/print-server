@@ -1,6 +1,7 @@
 package com.mikerusoft.redirect.to.stream.subscriber.kafka;
 
 import com.mikerusoft.redirect.to.stream.model.BasicRequestWrapper;
+import com.mikerusoft.redirect.to.stream.receiver.kafka.KafkaConsumerSubscriber;
 import com.mikerusoft.redirect.to.stream.services.RedirectService;
 import com.mikerusoft.redirect.to.stream.subscriber.kafka.model.KafkaRequestWrapper;
 import io.micronaut.http.MediaType;
@@ -15,6 +16,12 @@ import lombok.extern.slf4j.Slf4j;
 public class KafkaSubscriberController {
 
     private RedirectService<BasicRequestWrapper, Flowable<BasicRequestWrapper>> service;
+    private KafkaConsumerSubscriber subscriber;
+
+    public KafkaSubscriberController(RedirectService<BasicRequestWrapper, Flowable<BasicRequestWrapper>> service, KafkaConsumerSubscriber subscriber) {
+        this.service = service;
+        this.subscriber = subscriber;
+    }
 
     @Get(value = "/topic/{topic}", produces = {MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON_STREAM})
     public Flowable<KafkaRequestWrapper> filter(@PathVariable("topic") String topic) {
@@ -24,6 +31,7 @@ public class KafkaSubscriberController {
     }
 
     private Flowable<KafkaRequestWrapper> getFlowable(String topic) {
+        subscriber.subscribe(topic, null); // creates consumer, if doesn't exist
         return service.subscriber()
                 .filter(r -> r instanceof KafkaRequestWrapper)
                 .map(r -> (KafkaRequestWrapper)r)

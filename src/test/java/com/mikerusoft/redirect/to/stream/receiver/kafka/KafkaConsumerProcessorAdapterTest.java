@@ -44,7 +44,7 @@ class KafkaConsumerProcessorAdapterTest {
         props.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:6001");
         props.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getName());
         props.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getName());
-        clientId = kafkaProcessor.subscribe("test", "test", null);
+        clientId = kafkaProcessor.subscribe("test", null);
         producer = new KafkaProducer<>(props);
         Thread.sleep(4000);
     }

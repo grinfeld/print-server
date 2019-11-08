@@ -59,9 +59,9 @@ public class KafkaConsumerSubscriber implements Closeable {
         this.timeoutForSubscribe = timeoutForSubscribe;
     }
 
-    public String subscribe(String topic, String groupId, Properties props) {
-        var groupProps = createConsumerProperties(groupId, props);
+    public String subscribe(String topic, Properties props) {
         var clientId = generateClientId(topic);
+        var groupProps = createConsumerProperties(clientId, props);
         var kafkaConsumer = initConsumer(topic, groupProps, clientId);
         executorService.submit(() -> startConsumer(kafkaConsumer, clientId));
         return clientId;
