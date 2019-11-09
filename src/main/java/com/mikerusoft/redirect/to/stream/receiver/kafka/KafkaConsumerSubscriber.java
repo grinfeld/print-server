@@ -40,31 +40,26 @@ import java.util.stream.StreamSupport;
 public class KafkaConsumerSubscriber implements Closeable {
 
     private final ExecutorService executorService;
-    private final ApplicationConfiguration applicationConfiguration;
     private final Map<String, Pair<Consumer<?,?>, Boolean>> consumers = new ConcurrentHashMap<>();
     private final RedirectService<BasicRequestWrapper, FlowableOnSubscribe<BasicRequestWrapper>> service;
     private final String bootstrapServers;
     private final long timeoutForSubscribe;
 
     public KafkaConsumerSubscriber(@Named(TaskExecutors.MESSAGE_CONSUMER) ExecutorService executorService,
-                                   ApplicationConfiguration applicationConfiguration,
                                    RedirectService<BasicRequestWrapper, FlowableOnSubscribe<BasicRequestWrapper>> service,
                                    @Value("${kafka.bootstrap.servers}") String bootstrapServers,
                                    @Value("${kafka.consumer.subscribe.timeout:10000}") long timeoutForSubscribe
     ) {
         this.executorService = executorService;
-        this.applicationConfiguration = applicationConfiguration;
         this.service = service;
         this.bootstrapServers = bootstrapServers;
         this.timeoutForSubscribe = timeoutForSubscribe;
     }
 
-    public String subscribe(String topic, Properties props) {
-        var clientId = generateClientId(topic);
-        var groupProps = createConsumerProperties(clientId, props);
-        var kafkaConsumer = initConsumer(topic, groupProps, clientId);
-        executorService.submit(() -> startConsumer(kafkaConsumer, clientId));
-        return clientId;
+    public void subscribe(String topic, String groupId, Properties props) {
+        var groupProps = createConsumerProperties(groupId, props);
+        var kafkaConsumer = initConsumer(topic, groupProps, groupId);
+        executorService.submit(() -> startConsumer(kafkaConsumer, groupId));
     }
 
     @Override
@@ -172,10 +167,6 @@ public class KafkaConsumerSubscriber implements Closeable {
             assignToPartition(kafkaConsumer, topic);
             return Pair.of(kafkaConsumer, false);
         }).getLeft();
-    }
-
-    private String generateClientId(String topic) {
-        return applicationConfiguration.getName() + "-" + topic;
     }
 
     private Properties createConsumerProperties(String groupId, Properties props) {

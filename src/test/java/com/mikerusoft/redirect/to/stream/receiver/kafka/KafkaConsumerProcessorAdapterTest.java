@@ -3,7 +3,6 @@ package com.mikerusoft.redirect.to.stream.receiver.kafka;
 import com.mikerusoft.redirect.to.stream.model.BasicRequestWrapper;
 import com.mikerusoft.redirect.to.stream.services.RedirectService;
 import com.mikerusoft.redirect.to.stream.subscriber.kafka.model.KafkaRequestWrapper;
-import com.mikerusoft.redirect.to.stream.utils.Utils;
 import io.micronaut.test.annotation.MicronautTest;
 import io.reactivex.Flowable;
 import net.manub.embeddedkafka.EmbeddedK;
@@ -34,7 +33,6 @@ class KafkaConsumerProcessorAdapterTest {
     private RedirectService<BasicRequestWrapper, Flowable<BasicRequestWrapper>> service;
 
     private EmbeddedK kafka;
-    private String clientId;
     private KafkaProducer<byte[], byte[]> producer;
 
     @BeforeAll
@@ -44,7 +42,7 @@ class KafkaConsumerProcessorAdapterTest {
         props.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:6001");
         props.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getName());
         props.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getName());
-        clientId = kafkaProcessor.subscribe("test", null);
+        kafkaProcessor.subscribe("test", "group",null);
         producer = new KafkaProducer<>(props);
         Thread.sleep(4000);
     }
@@ -73,9 +71,7 @@ class KafkaConsumerProcessorAdapterTest {
 
     @AfterAll
     void closeKafka() {
-        if (!Utils.isEmpty(clientId)) {
-            try { kafkaProcessor.close(clientId); } catch (Exception ignore) { /* do nothing */ }
-        }
+        try { kafkaProcessor.close("group"); } catch (Exception ignore) { /* do nothing */ }
         try { kafka.stop(true); } catch (Exception ignore) { /* do nothing */ }
     }
 }

@@ -79,7 +79,6 @@ public class RedirectPublisher implements RedirectService<BasicRequestWrapper, F
     }
 
     private void cancelEmitter(FlowableEmitter<BasicRequestWrapper> emitter) {
-        FlowableEmitter<BasicRequestWrapper> flowable = emitters.get(emitter.hashCode());
         emitters.remove(emitter.hashCode());
         semaphore.release();
     }
