@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @MicronautTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class KafkaConsumerProcessorAdapterTest {
+class KafkaConsumerSubscriberTest {
 
     @Inject
     private KafkaConsumerSubscriber kafkaProcessor;

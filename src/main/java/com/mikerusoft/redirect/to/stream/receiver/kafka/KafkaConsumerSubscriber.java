@@ -143,6 +143,8 @@ public class KafkaConsumerSubscriber implements Closeable {
                 if (Utils.isEmpty(ise.getMessage()) || !ise.getMessage().startsWith("No current assignment for partition")) {
                     Utils.rethrowRuntime(ise);
                 }
+                // according to javadoc, if IllegalStateException is thrown - is same as doing unsubscribe
+                kafkaConsumer.subscribe(Collections.singletonList(topic));
             }
         }
     }

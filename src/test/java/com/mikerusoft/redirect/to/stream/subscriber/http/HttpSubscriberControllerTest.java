@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @MicronautTest
-class PublishDataControllerTest {
+class HttpSubscriberControllerTest {
 
     @Inject
     private RedirectService<BasicRequestWrapper, FlowableOnSubscribe<BasicRequestWrapper>> service;
