@@ -146,7 +146,8 @@ public class KafkaConsumerSubscriber implements Closeable {
             } catch (IllegalStateException ise) {
                 // means no offset exists - happens when such group connects 1st time and no offset/messages in the Kafka for this topic
                 if (offsetDoesNotExist(ise)) {
-                    // according to javadoc, if IllegalStateException is thrown - is same as doing unsubscribe
+                    // according to javadoc, if IllegalStateException is thrown - is same as doing unsubscribe,
+                    // so we need to subscribe again, when no offset exists
                     kafkaConsumer.subscribe(Collections.singletonList(topic));
                 } else {
                     Utils.rethrowRuntime(ise);
