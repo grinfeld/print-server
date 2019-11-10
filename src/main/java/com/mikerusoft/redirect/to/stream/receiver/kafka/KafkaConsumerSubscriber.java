@@ -112,19 +112,10 @@ public class KafkaConsumerSubscriber implements Closeable {
 
         var ready = false;
 
-        // trying to subscribe for latest partition
+        // trying to subscribe for latest offset in partition
         while (!ready && currentTime < workUntil) {
             try {
-                List<PartitionInfo> partitionInfos = kafkaConsumer.partitionsFor(topic);
-                for (PartitionInfo pi : partitionInfos) {
-                    try {
-                        kafkaConsumer.seekToEnd(Collections.singletonList(new TopicPartition(topic, pi.partition())));
-                    } catch (IllegalStateException ise) {
-                        if (Utils.isEmpty(ise.getMessage()) || !ise.getMessage().startsWith("No current assignment for partition")) {
-                            Utils.rethrowRuntime(ise);
-                        }
-                    }
-                }
+                seekToEnd(kafkaConsumer, topic);
                 ready = true;
             } catch (Exception e) {
                 original = e;
@@ -139,6 +130,20 @@ public class KafkaConsumerSubscriber implements Closeable {
 
         if (!ready) {
             Utils.rethrowRuntime(original);
+        }
+    }
+
+    private static void seekToEnd(Consumer<?, ?> kafkaConsumer, String topic) {
+        List<PartitionInfo> partitionInfos = kafkaConsumer.partitionsFor(topic);
+        for (PartitionInfo pi : partitionInfos) {
+            try {
+                kafkaConsumer.seekToEnd(Collections.singletonList(new TopicPartition(topic, pi.partition())));
+            } catch (IllegalStateException ise) {
+                // means no offset exists - happens when such group connects 1st time and no messages in Kafka for this topic
+                if (Utils.isEmpty(ise.getMessage()) || !ise.getMessage().startsWith("No current assignment for partition")) {
+                    Utils.rethrowRuntime(ise);
+                }
+            }
         }
     }
 
