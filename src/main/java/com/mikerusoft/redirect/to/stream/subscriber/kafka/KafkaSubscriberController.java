@@ -4,6 +4,7 @@ import com.mikerusoft.redirect.to.stream.model.BasicRequestWrapper;
 import com.mikerusoft.redirect.to.stream.receiver.kafka.KafkaConsumerSubscriber;
 import com.mikerusoft.redirect.to.stream.services.RedirectService;
 import com.mikerusoft.redirect.to.stream.subscriber.kafka.model.KafkaRequestWrapper;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
@@ -14,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Controller("/retrieve/kafka")
+@Requires(property = "kafka.bootstrap.servers")
 public class KafkaSubscriberController {
 
     private final RedirectService<BasicRequestWrapper, Flowable<BasicRequestWrapper>> service;

@@ -5,7 +5,6 @@ import com.mikerusoft.redirect.to.stream.subscriber.kafka.model.KafkaRequestWrap
 import com.mikerusoft.redirect.to.stream.services.RedirectService;
 import com.mikerusoft.redirect.to.stream.utils.Pair;
 import com.mikerusoft.redirect.to.stream.utils.Utils;
-import io.micronaut.configuration.kafka.annotation.OffsetReset;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.scheduling.TaskExecutors;
@@ -190,7 +189,7 @@ public class KafkaConsumerSubscriber implements Closeable {
     private Properties createConsumerProperties(String groupId, Properties props) {
         var groupProps = new Properties(Optional.ofNullable(props).orElse(new Properties()));
         groupProps.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-        groupProps.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, OffsetReset.LATEST.name().toLowerCase());
+        groupProps.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
         groupProps.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
         groupProps.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         groupProps.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName());
