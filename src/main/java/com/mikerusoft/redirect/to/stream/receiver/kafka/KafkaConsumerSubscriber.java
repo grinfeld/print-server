@@ -38,7 +38,7 @@ import java.util.stream.StreamSupport;
 @Slf4j
 public class KafkaConsumerSubscriber implements Closeable {
 
-    private static final long TIME_TO_WAIT_UNTIL_NEXT_RETRY_MS = 10L;
+    private static final long UNTIL_NEXT_RETRY_MS = 10L;
     private final ExecutorService executorService;
     private final Map<String, Pair<Consumer<?,?>, Boolean>> consumers = new ConcurrentHashMap<>();
     private final RedirectService<BasicRequestWrapper, FlowableOnSubscribe<BasicRequestWrapper>> service;
@@ -119,7 +119,7 @@ public class KafkaConsumerSubscriber implements Closeable {
                 ready = true;
             } catch (Exception e) {
                 original = e;
-                waitFor(TIME_TO_WAIT_UNTIL_NEXT_RETRY_MS);
+                waitFor(UNTIL_NEXT_RETRY_MS);
             }
             currentTime = System.currentTimeMillis();
         }
