@@ -54,6 +54,7 @@ public class KafkaSubscriberControllerTest {
     void subscribe() throws Exception {
         kafkaRequestWrapperFlowable = client.jsonStream(HttpRequest.GET("/topic/test"), KafkaRequestWrapper.class);
         kafkaRequestWrapperFlowable.subscribe();
+        // it takes time until stream subscribed on server. On client side it subscribed immediately - oops
         Thread.sleep(4000L);
     }
 
@@ -71,15 +72,15 @@ public class KafkaSubscriberControllerTest {
 
     private static void assertRequest(BasicRequestWrapper request) {
         assertThat(request).isNotNull()
-                .isInstanceOf(KafkaRequestWrapper.class)
-                .hasFieldOrPropertyWithValue("key", "test")
-                .hasFieldOrProperty("offset")
-                .hasFieldOrProperty("partition")
-                .hasFieldOrProperty("timestamp")
-                .hasFieldOrProperty("timestampType")
-                .hasFieldOrProperty("headers")
-                .hasFieldOrPropertyWithValue("topic", "test")
-                .hasFieldOrPropertyWithValue("body", "test1")
+            .isInstanceOf(KafkaRequestWrapper.class)
+            .hasFieldOrPropertyWithValue("key", "test")
+            .hasFieldOrProperty("offset")
+            .hasFieldOrProperty("partition")
+            .hasFieldOrProperty("timestamp")
+            .hasFieldOrProperty("timestampType")
+            .hasFieldOrProperty("headers")
+            .hasFieldOrPropertyWithValue("topic", "test")
+            .hasFieldOrPropertyWithValue("body", "test1")
         ;
     }
 

@@ -8,7 +8,6 @@ import com.mikerusoft.redirect.to.stream.utils.Utils;
 import io.micronaut.configuration.kafka.annotation.OffsetReset;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
-import io.micronaut.runtime.ApplicationConfiguration;
 import io.micronaut.scheduling.TaskExecutors;
 import io.reactivex.FlowableOnSubscribe;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +38,7 @@ import java.util.stream.StreamSupport;
 @Slf4j
 public class KafkaConsumerSubscriber implements Closeable {
 
+    private static final long TIME_TO_WAIT_UNTIL_NEXT_RETRY_MS = 10L;
     private final ExecutorService executorService;
     private final Map<String, Pair<Consumer<?,?>, Boolean>> consumers = new ConcurrentHashMap<>();
     private final RedirectService<BasicRequestWrapper, FlowableOnSubscribe<BasicRequestWrapper>> service;
@@ -119,17 +119,22 @@ public class KafkaConsumerSubscriber implements Closeable {
                 ready = true;
             } catch (Exception e) {
                 original = e;
-                try {
-                    TimeUnit.MILLISECONDS.sleep(10);
-                } catch (InterruptedException ignore) {
-                    // ignoring InterruptedException
-                }
+                waitFor(TIME_TO_WAIT_UNTIL_NEXT_RETRY_MS);
             }
             currentTime = System.currentTimeMillis();
         }
 
         if (!ready) {
+            try { kafkaConsumer.close(); } catch (Exception ignore){ /* nothing to do*/ }
             Utils.rethrowRuntime(original);
+        }
+    }
+
+    private void waitFor(long time) {
+        try {
+            TimeUnit.MILLISECONDS.sleep(time);
+        } catch (InterruptedException ignore) {
+            // ignoring InterruptedException
         }
     }
 
@@ -139,14 +144,19 @@ public class KafkaConsumerSubscriber implements Closeable {
             try {
                 kafkaConsumer.seekToEnd(Collections.singletonList(new TopicPartition(topic, pi.partition())));
             } catch (IllegalStateException ise) {
-                // means no offset exists - happens when such group connects 1st time and no messages in Kafka for this topic
-                if (Utils.isEmpty(ise.getMessage()) || !ise.getMessage().startsWith("No current assignment for partition")) {
+                // means no offset exists - happens when such group connects 1st time and no offset/messages in the Kafka for this topic
+                if (offsetDoesNotExist(ise)) {
+                    // according to javadoc, if IllegalStateException is thrown - is same as doing unsubscribe
+                    kafkaConsumer.subscribe(Collections.singletonList(topic));
+                } else {
                     Utils.rethrowRuntime(ise);
                 }
-                // according to javadoc, if IllegalStateException is thrown - is same as doing unsubscribe
-                kafkaConsumer.subscribe(Collections.singletonList(topic));
             }
         }
+    }
+
+    private static boolean offsetDoesNotExist(IllegalStateException ise) {
+        return (!Utils.isEmpty(ise.getMessage()) && ise.getMessage().startsWith("No current assignment for partition"));
     }
 
     private Map<String, List<String>> convertHeaders(Headers headers) {
