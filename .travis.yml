@@ -7,10 +7,10 @@ matrix:
   allow_failures:
     - jdk: openjdk-ea
 
-addons:
-  sonarcloud:
-    organization: "grinfeld-github"
-    token:
-      secure: "3d7970bd2cc5f292bd2c69dadef6450b243ef21a" # encrypted value of your token
-script:
-  - gradle sonarqube
+#addons:
+#  sonarcloud:
+#    organization: "grinfeld-github"
+#    token:
+#      secure: "3d7970bd2cc5f292bd2c69dadef6450b243ef21a" # encrypted value of your token
+#script:
+#  - gradle sonarqube
