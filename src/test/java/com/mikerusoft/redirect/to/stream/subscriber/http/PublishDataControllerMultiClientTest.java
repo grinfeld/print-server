@@ -3,6 +3,7 @@ package com.mikerusoft.redirect.to.stream.subscriber.http;
 import com.mikerusoft.redirect.to.stream.model.BasicRequestWrapper;
 import com.mikerusoft.redirect.to.stream.subscriber.http.model.HttpRequestWrapper;
 import com.mikerusoft.redirect.to.stream.services.RedirectService;
+import com.mikerusoft.redirect.to.stream.helpers.FutureEmitter;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.MutableHttpRequest;
 import io.micronaut.http.client.RxStreamingHttpClient;
@@ -52,8 +53,8 @@ class PublishDataControllerMultiClientTest {
 
     @Test
     @Timeout(value = 2, unit = TimeUnit.SECONDS)
-    void when2SubscribersAndPublished2Request_expected2ResponseForEverySubscriber() throws Exception {
-        FutureEmitter<List<HttpRequestWrapper>> futures = getResultFutures(HttpRequest.GET("/all"), r -> r.buffer(2).blockingFirst())
+    void when2SubscribersAndPublished2Request_expected2ResponseForEverySubscriber() {
+        var futures = getResultFutures(HttpRequest.GET("/all"), r -> r.buffer(2).blockingFirst())
             .emit(HttpRequestWrapper.builder().method("GET").uri("somepath/0").build())
             .emit(HttpRequestWrapper.builder().method("POST").uri("somepath/1").build());
 
@@ -62,13 +63,13 @@ class PublishDataControllerMultiClientTest {
         assertFalse(futures.hasNext());
     }
 
-    private <T, V> FutureEmitter<T> getResultFutures(MutableHttpRequest<V> req, Function<Flowable<HttpRequestWrapper>, T> func) {
+    private <T, V> FutureEmitter<T, BasicRequestWrapper> getResultFutures(MutableHttpRequest<V> req, Function<Flowable<HttpRequestWrapper>, T> func) {
         var retrieve1 = client1.jsonStream(req, HttpRequestWrapper.class);
         var retrieve2 = client2.jsonStream(req, HttpRequestWrapper.class);
         var result1 = executor.submit( () -> func.apply(retrieve1) );
         var result2 = executor.submit( () -> func.apply(retrieve2) );
         await().until(() -> service.hasSubscribers());
-        return new FutureEmitter<>(service, result1, result2);
+        return new FutureEmitter<>(service::emit, result1, result2);
     }
 
     private static void assertRequest(List<HttpRequestWrapper> reqs) {

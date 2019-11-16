@@ -3,6 +3,7 @@ package com.mikerusoft.redirect.to.stream.subscriber.http;
 import com.mikerusoft.redirect.to.stream.model.BasicRequestWrapper;
 import com.mikerusoft.redirect.to.stream.subscriber.http.model.HttpRequestWrapper;
 import com.mikerusoft.redirect.to.stream.services.RedirectService;
+import com.mikerusoft.redirect.to.stream.helpers.FutureEmitter;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.MutableHttpRequest;
 import io.micronaut.http.client.RxStreamingHttpClient;
@@ -44,7 +45,7 @@ class HttpSubscriberControllerTest {
     }
 
     @Test
-    @Timeout(value = 1, unit = TimeUnit.SECONDS)
+    @Timeout(value = 2, unit = TimeUnit.SECONDS)
     void all_when1RequestPublished_expectedOneResponse() throws Exception {
         var req = getResultFuture(HttpRequest.GET("/all"), Flowable::blockingFirst)
                 .emit(HttpRequestWrapper.builder().method("GET").uri("somepath/0").build())
@@ -53,7 +54,7 @@ class HttpSubscriberControllerTest {
     }
 
     @Test
-    @Timeout(value = 1, unit = TimeUnit.SECONDS)
+    @Timeout(value = 2, unit = TimeUnit.SECONDS)
     void all_when2RequestPublished_expected2Response() throws Exception {
         var reqs = getResultFuture(HttpRequest.GET("/all"), r -> r.buffer(2).blockingFirst())
                 .emit(HttpRequestWrapper.builder().method("GET").uri("somepath/0").build())
@@ -68,7 +69,7 @@ class HttpSubscriberControllerTest {
     }
 
     @Test
-    @Timeout(value = 2, unit = TimeUnit.SECONDS)
+    @Timeout(value = 4, unit = TimeUnit.SECONDS)
     void all_when1RequestIsHttpAnd2ndIsNotPublished_expected1HttpResponse() throws Exception {
         var req = getResultFuture(HttpRequest.GET("/all"), Flowable::blockingFirst)
                 .emit(new BasicRequestWrapper<>(null, "staaaam body"))
@@ -78,7 +79,7 @@ class HttpSubscriberControllerTest {
     }
 
     @Test
-    @Timeout(value = 1, unit = TimeUnit.SECONDS)
+    @Timeout(value = 2, unit = TimeUnit.SECONDS)
     void byMethod_withUpperCase_when1RequestPublishedAndMatch_expectedOneResponse() throws Exception {
         var req = getResultFuture(HttpRequest.GET("/method/GET"), Flowable::blockingFirst)
                 .emit(HttpRequestWrapper.builder().method("GET").uri("/uri/somepath/0").build())
@@ -87,7 +88,7 @@ class HttpSubscriberControllerTest {
     }
 
     @Test
-    @Timeout(value = 1, unit = TimeUnit.SECONDS)
+    @Timeout(value = 2, unit = TimeUnit.SECONDS)
     void byMethod_withLowerCase_when1RequestPublishedAndMatch_expectedOneResponse() throws Exception {
         var req = getResultFuture(HttpRequest.GET("/method/get"), Flowable::blockingFirst)
                .emit(HttpRequestWrapper.builder().method("GET").uri("/uri/somepath/0").build())
@@ -96,7 +97,7 @@ class HttpSubscriberControllerTest {
     }
 
     @Test
-    @Timeout(value = 1, unit = TimeUnit.SECONDS)
+    @Timeout(value = 2, unit = TimeUnit.SECONDS)
     void byUrl_withLowerCase_when1RequestPublishedAndMatch_expectedOneResponse() throws Exception {
         var req = getResultFuture(HttpRequest.GET("/uri/somepath"), Flowable::blockingFirst)
                 .emit(HttpRequestWrapper.builder().method("GET").uri("/uri/somepath").build())
@@ -105,7 +106,7 @@ class HttpSubscriberControllerTest {
     }
 
     @Test
-    @Timeout(value = 1, unit = TimeUnit.SECONDS)
+    @Timeout(value = 2, unit = TimeUnit.SECONDS)
     void byUrl_withUpperCase_when1RequestPublishedAndMatch_expectedOneResponse() throws Exception {
         var req = getResultFuture(HttpRequest.GET("/uri/SOMEPATH"), Flowable::blockingFirst)
                 .emit(HttpRequestWrapper.builder().method("GET").uri("/uri/SOMEPATH").build())
@@ -114,7 +115,7 @@ class HttpSubscriberControllerTest {
     }
 
     @Test
-    @Timeout(value = 1, unit = TimeUnit.SECONDS)
+    @Timeout(value = 2, unit = TimeUnit.SECONDS)
     void byUrl_withLOngUrlWithSlashes_when1RequestPublishedAndMatch_expectedOneResponse() throws Exception {
         var req = getResultFuture(HttpRequest.GET("/uri/somepath/0"), Flowable::blockingFirst)
                 .emit(HttpRequestWrapper.builder().method("GET").uri("/uri/somepath/0").build())
@@ -122,10 +123,10 @@ class HttpSubscriberControllerTest {
         assertThat(req).isNotNull().isEqualTo(HttpRequestWrapper.builder().method("GET").uri("/uri/somepath/0").build());
     }
 
-    private <T, V> FutureEmitter<T> getResultFuture(MutableHttpRequest<V> req, Function<Flowable<HttpRequestWrapper>, T> func) {
+    private <T, V> FutureEmitter<T, BasicRequestWrapper> getResultFuture(MutableHttpRequest<V> req, Function<Flowable<HttpRequestWrapper>, T> func) {
         var retrieve = client.jsonStream(req, HttpRequestWrapper.class);
         var result = executor.submit( () -> func.apply(retrieve) );
         await().until(() -> service.hasSubscribers());
-        return new FutureEmitter<>(service, result);
+        return new FutureEmitter<>(service::emit, result);
     }
 }
