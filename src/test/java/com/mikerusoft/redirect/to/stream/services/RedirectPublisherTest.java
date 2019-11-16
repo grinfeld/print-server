@@ -11,6 +11,7 @@ import javax.inject.Inject;
 
 import java.util.concurrent.TimeUnit;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 @MicronautTest
@@ -68,11 +69,11 @@ class RedirectPublisherTest {
         var retrieve = service.subscriber();
         var expected = retrieve.test();
 
-        Thread.sleep(100L); // let's sleep, to ensure that nothing happens
-
-        expected.assertSubscribed();
-        expected.assertNoErrors();
-        expected.assertEmpty();
+        await().pollDelay(100L, TimeUnit.MILLISECONDS).untilAsserted(() -> {
+            expected.assertSubscribed();
+            expected.assertNoErrors();
+            expected.assertEmpty();
+        });
     }
 
     @Test

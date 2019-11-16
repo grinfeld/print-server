@@ -16,7 +16,9 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 @MicronautTest
 class HttpSubscriberControllerTest {
@@ -35,7 +37,7 @@ class HttpSubscriberControllerTest {
     @Timeout(value = 1, unit = TimeUnit.SECONDS)
     void all_when1RequestPublished_expectedOneResponse() throws Exception {
         var retrieve = client.jsonStream(HttpRequest.GET("/all"), HttpRequestWrapper.class);
-        Executors.newSingleThreadScheduledExecutor().schedule(() -> service.emit(HttpRequestWrapper.builder().method("GET").uri("somepath/0").build()), 300L, TimeUnit.MILLISECONDS);
+        Executors.newSingleThreadScheduledExecutor().schedule(() -> service.emit(HttpRequestWrapper.builder().method("GET").uri("somepath/0").build()), 300L, MILLISECONDS);
         var req = retrieve.blockingFirst();
         assertThat(req).isNotNull().isEqualTo(HttpRequestWrapper.builder().method("GET").uri("somepath/0").build());
     }
@@ -48,7 +50,7 @@ class HttpSubscriberControllerTest {
                     service.emit(HttpRequestWrapper.builder().method("GET").uri("somepath/0").build());
                     service.emit(HttpRequestWrapper.builder().method("POST").uri("somepath/1").build());
                 },
-                300L, TimeUnit.MILLISECONDS);
+                300L, MILLISECONDS);
         List<HttpRequestWrapper> reqs = retrieve.buffer(2).blockingFirst();
         assertThat(reqs).isNotNull().hasSize(2)
                 .containsExactly(
@@ -80,7 +82,7 @@ class HttpSubscriberControllerTest {
     @Timeout(value = 1, unit = TimeUnit.SECONDS)
     void byMethod_withUpperCase_when1RequestPublishedAndMatch_expectedOneResponse() throws Exception {
         var retrieve = client.jsonStream(HttpRequest.GET("/method/GET"), HttpRequestWrapper.class);
-        Executors.newSingleThreadScheduledExecutor().schedule(() -> service.emit(HttpRequestWrapper.builder().method("GET").uri("/uri/somepath/0").build()), 300L, TimeUnit.MILLISECONDS);
+        Executors.newSingleThreadScheduledExecutor().schedule(() -> service.emit(HttpRequestWrapper.builder().method("GET").uri("/uri/somepath/0").build()), 300L, MILLISECONDS);
         var req = retrieve.blockingFirst();
         assertThat(req).isNotNull().isEqualTo(HttpRequestWrapper.builder().method("GET").uri("/uri/somepath/0").build());
     }
@@ -89,7 +91,7 @@ class HttpSubscriberControllerTest {
     @Timeout(value = 1, unit = TimeUnit.SECONDS)
     void byMethod_withLowerCase_when1RequestPublishedAndMatch_expectedOneResponse() throws Exception {
         var retrieve = client.jsonStream(HttpRequest.GET("/method/get"), HttpRequestWrapper.class);
-        Executors.newSingleThreadScheduledExecutor().schedule(() -> service.emit(HttpRequestWrapper.builder().method("GET").uri("/uri/somepath/0").build()), 300L, TimeUnit.MILLISECONDS);
+        Executors.newSingleThreadScheduledExecutor().schedule(() -> service.emit(HttpRequestWrapper.builder().method("GET").uri("/uri/somepath/0").build()), 300L, MILLISECONDS);
         var req = retrieve.blockingFirst();
         assertThat(req).isNotNull().isEqualTo(HttpRequestWrapper.builder().method("GET").uri("/uri/somepath/0").build());
     }
@@ -98,7 +100,7 @@ class HttpSubscriberControllerTest {
     @Timeout(value = 1, unit = TimeUnit.SECONDS)
     void byUrl_withLowerCase_when1RequestPublishedAndMatch_expectedOneResponse() throws Exception {
         var retrieve = client.jsonStream(HttpRequest.GET("/uri/somepath"), HttpRequestWrapper.class);
-        Executors.newSingleThreadScheduledExecutor().schedule(() -> service.emit(HttpRequestWrapper.builder().method("GET").uri("/uri/somepath").build()), 300L, TimeUnit.MILLISECONDS);
+        Executors.newSingleThreadScheduledExecutor().schedule(() -> service.emit(HttpRequestWrapper.builder().method("GET").uri("/uri/somepath").build()), 300L, MILLISECONDS);
         var req = retrieve.blockingFirst();
         assertThat(req).isNotNull().isEqualTo(HttpRequestWrapper.builder().method("GET").uri("/uri/somepath").build());
     }
@@ -107,7 +109,7 @@ class HttpSubscriberControllerTest {
     @Timeout(value = 1, unit = TimeUnit.SECONDS)
     void byUrl_withUpperCase_when1RequestPublishedAndMatch_expectedOneResponse() throws Exception {
         var retrieve = client.jsonStream(HttpRequest.GET("/uri/SOMEPATH"), HttpRequestWrapper.class);
-        Executors.newSingleThreadScheduledExecutor().schedule(() -> service.emit(HttpRequestWrapper.builder().method("GET").uri("/uri/SOMEPATH").build()), 300L, TimeUnit.MILLISECONDS);
+        Executors.newSingleThreadScheduledExecutor().schedule(() -> service.emit(HttpRequestWrapper.builder().method("GET").uri("/uri/SOMEPATH").build()), 300L, MILLISECONDS);
         var req = retrieve.blockingFirst();
         assertThat(req).isNotNull().isEqualTo(HttpRequestWrapper.builder().method("GET").uri("/uri/SOMEPATH").build());
     }
@@ -116,7 +118,7 @@ class HttpSubscriberControllerTest {
     @Timeout(value = 1, unit = TimeUnit.SECONDS)
     void byUrl_withLOngUrlWithSlashes_when1RequestPublishedAndMatch_expectedOneResponse() throws Exception {
         var retrieve = client.jsonStream(HttpRequest.GET("/uri/somepath/0"), HttpRequestWrapper.class);
-        Executors.newSingleThreadScheduledExecutor().schedule(() -> service.emit(HttpRequestWrapper.builder().method("GET").uri("/uri/somepath/0").build()), 300L, TimeUnit.MILLISECONDS);
+        Executors.newSingleThreadScheduledExecutor().schedule(() -> service.emit(HttpRequestWrapper.builder().method("GET").uri("/uri/somepath/0").build()), 300L, MILLISECONDS);
         var req = retrieve.blockingFirst();
         assertThat(req).isNotNull().isEqualTo(HttpRequestWrapper.builder().method("GET").uri("/uri/somepath/0").build());
     }

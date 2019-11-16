@@ -73,6 +73,7 @@ dependencies {
     testCompile "io.micronaut:micronaut-http-server-netty"
     testRuntime "org.junit.jupiter:junit-jupiter-engine"
     testCompile "org.mockito:mockito-core:$mockitoVersion"
+    testCompile "org.awaitility:awaitility:$awaitilityVersion"
     testCompile "org.assertj:assertj-core:$assertJVersion"
     testCompile "io.github.embeddedkafka:embedded-kafka_$kafkaVersion:$kafkaClientVersion"
 }
