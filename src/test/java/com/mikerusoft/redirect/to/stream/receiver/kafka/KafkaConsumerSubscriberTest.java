@@ -21,9 +21,8 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
-@MicronautTest
+@MicronautTest(propertySources = "classpath:application-kafka.yml")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class KafkaConsumerSubscriberTest {
 

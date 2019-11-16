@@ -25,7 +25,7 @@ import java.util.Properties;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@MicronautTest
+@MicronautTest(propertySources = "classpath:application-kafka.yml")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class KafkaSubscriberControllerTest {
 
