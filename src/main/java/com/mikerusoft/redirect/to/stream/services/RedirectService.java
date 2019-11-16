@@ -5,4 +5,5 @@ import io.reactivex.functions.Action;
 public interface RedirectService<T, F> {
     void emit(T element);
     F subscriber();
+    boolean hasSubscribers();
 }

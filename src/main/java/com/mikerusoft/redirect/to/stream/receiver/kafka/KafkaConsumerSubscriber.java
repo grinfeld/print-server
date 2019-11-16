@@ -66,6 +66,10 @@ public class KafkaConsumerSubscriber implements Closeable {
         consumers.keySet().forEach(this::close);
     }
 
+    public boolean hasSubscribers() {
+        return consumers != null && consumers.size() > 0;
+    }
+
     public void close(String clientId) {
         var removed = consumers.remove(clientId);
         if (removed != null) {

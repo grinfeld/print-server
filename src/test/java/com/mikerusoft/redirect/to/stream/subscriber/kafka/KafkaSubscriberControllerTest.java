@@ -55,7 +55,7 @@ public class KafkaSubscriberControllerTest {
         kafkaRequestWrapperFlowable = client.jsonStream(HttpRequest.GET("/topic/test"), KafkaRequestWrapper.class);
         kafkaRequestWrapperFlowable.subscribe();
         // it takes time until stream subscribed on server. On client side it subscribed immediately - oops
-        Thread.sleep(4000L);
+        Thread.sleep(5000L);
     }
 
     @Test

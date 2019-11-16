@@ -59,6 +59,11 @@ public class RedirectPublisher implements RedirectService<BasicRequestWrapper, F
     }
 
     @Override
+    public boolean hasSubscribers() {
+        return emitters != null && emitters.size() > 0;
+    }
+
+    @Override
     public Flowable<BasicRequestWrapper> subscriber() {
         return eventSubscribers;
     }
