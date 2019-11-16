@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-@MicronautTest
+@MicronautTest(propertySources = "classpath:application-nokafka.yml")
 class RedirectPublisherTest {
 
     @Inject

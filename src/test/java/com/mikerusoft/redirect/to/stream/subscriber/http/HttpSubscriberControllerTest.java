@@ -18,9 +18,8 @@ import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
-@MicronautTest
+@MicronautTest(propertySources = "classpath:application-nokafka.yml")
 class HttpSubscriberControllerTest {
 
     @Inject

@@ -18,7 +18,7 @@ import java.util.concurrent.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@MicronautTest
+@MicronautTest(propertySources = "classpath:application-nokafka.yml")
 class PublishDataControllerMultiClientTest {
 
     @Inject

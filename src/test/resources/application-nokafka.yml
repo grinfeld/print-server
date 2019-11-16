@@ -1,0 +1,9 @@
+micronaut:
+  application:
+    name: redirect-to-stream
+  server:
+    port: ${serverPort:8087}
+
+app:
+  subscribers:
+    size: ${appSubscibers:5}
