@@ -59,7 +59,6 @@ dependencies {
     compile "io.micronaut:micronaut-runtime"
     compile "io.micronaut:micronaut-http-client"
     compile "io.micronaut:micronaut-http-server-netty"
-    compile "org.apache.kafka:kafka-clients:$kafkaClientVersion"
 
     runtime "io.micronaut:micronaut-core:$micronautVersion"
     runtime "io.micronaut:micronaut-management"
@@ -75,7 +74,6 @@ dependencies {
     testCompile "org.mockito:mockito-core:$mockitoVersion"
     testCompile "org.awaitility:awaitility:$awaitilityVersion"
     testCompile "org.assertj:assertj-core:$assertJVersion"
-    testCompile "io.github.embeddedkafka:embedded-kafka_$kafkaVersion:$kafkaClientVersion"
 }
 
 test {

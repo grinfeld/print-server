@@ -29,7 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@MicronautTest(propertySources = "classpath:application-nokafka.yml")
+@MicronautTest(propertySources = "classpath:application-test.yml")
 class HttpReceiverControllerTest {
 
     @Inject

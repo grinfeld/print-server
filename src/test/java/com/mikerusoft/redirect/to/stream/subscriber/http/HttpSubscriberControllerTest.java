@@ -23,7 +23,7 @@ import java.util.function.Function;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
-@MicronautTest(propertySources = "classpath:application-nokafka.yml")
+@MicronautTest(propertySources = "classpath:application-test.yml")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class HttpSubscriberControllerTest {
 
