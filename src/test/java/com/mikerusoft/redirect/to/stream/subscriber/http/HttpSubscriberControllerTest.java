@@ -34,7 +34,7 @@ class HttpSubscriberControllerTest {
     private HttpSubscriberController controller;
 
     @Inject
-    @Client("/retrieve/http")
+    @Client("/subscribe/http")
     private RxStreamingHttpClient client;
 
     private ExecutorService executor;

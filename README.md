@@ -11,10 +11,10 @@ Small web server that receives http requests and redirect them to any (reactive)
 The original purpose is - writing integration tests.
 
 Tests subscribe to possible 4 end-points:
-* /retrieve/all - redirects to subscriber any request received by server
-* /retrieve/uri/{uri} - filters requests by URI
-* /retrieve/method/{method} - filters requests by http method
-* /retrieve/filter/{method}/{uri} - filters requests by uri and http method
+* /subscribe/http/all - redirects to subscriber any request received by server
+* /subscribe/http/uri/{uri} - filters requests by URI
+* /subscribe/http/method/{method} - filters requests by http method
+* /subscribe/http/filter/{method}/{uri} - filters requests by uri and http method
 
 Service (or some pipeline thta ends with sending HttpRequest) we want to test should send/redirect requests to:
 * /receive/get/{any uri}

@@ -37,11 +37,11 @@ class PublishDataControllerMultiClientTest {
     private HttpSubscriberController controller;
 
     @Inject
-    @Client("/retrieve/http")
+    @Client("/subscribe/http")
     private RxStreamingHttpClient client1;
 
     @Inject
-    @Client("/retrieve/http")
+    @Client("/subscribe/http")
     private RxStreamingHttpClient client2;
 
     private ExecutorService executor;
