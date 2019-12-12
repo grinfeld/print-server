@@ -37,10 +37,6 @@ apply plugin: 'jacoco'
 
 mainClassName = 'com.mikerusoft.redirect.to.stream.Application'
 
-shadowJar {
-    mergeServiceFiles()
-}
-
 dependencyManagement {
     imports {
         mavenBom "io.micronaut:micronaut-bom:$micronautVersion"
@@ -59,6 +55,8 @@ dependencies {
     compile "io.micronaut:micronaut-runtime"
     compile "io.micronaut:micronaut-http-client"
     compile "io.micronaut:micronaut-http-server-netty"
+
+    compile "com.google.guava:guava:$guavaVersion"
 
     runtime "io.micronaut:micronaut-core:$micronautVersion"
     runtime "io.micronaut:micronaut-management"
@@ -87,6 +85,16 @@ tasks.withType(JavaCompile){
 
 shadowJar {
     mergeServiceFiles()
+}
+
+task forDockerJar(type: Copy, dependsOn: shadowJar) {
+    from jar
+    into "${buildDir}/libs/"
+    rename { file -> 'app.jar'}
+}
+
+build {
+    dependsOn('forDockerJar')
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
