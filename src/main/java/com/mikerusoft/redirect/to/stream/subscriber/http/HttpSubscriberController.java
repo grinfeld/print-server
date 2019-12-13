@@ -11,15 +11,12 @@ import io.micronaut.http.annotation.PathVariable;
 import io.reactivex.Flowable;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.inject.Inject;
-
 @Slf4j
 @Controller("/subscribe/http")
 public class HttpSubscriberController {
 
     private RedirectService<BasicRequestWrapper, Flowable<BasicRequestWrapper>> service;
 
-    @Inject
     public HttpSubscriberController(RedirectService<BasicRequestWrapper, Flowable<BasicRequestWrapper>> service) {
         this.service = service;
     }
