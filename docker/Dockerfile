@@ -6,6 +6,6 @@ RUN apk --no-cache add bash
 
 VOLUME /tmp
 
-ADD ./ /app.jar
+ADD build/libs/app.jar /
 
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS $JAVA_ARGS -jar app.jar"]
