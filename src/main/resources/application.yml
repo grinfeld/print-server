@@ -7,3 +7,8 @@ micronaut:
 app:
   subscribers:
     size: ${appSubscibers:5}
+
+receiver:
+  inactiveUrlExpireSec: 300
+  globalFrequencyCount: 10
+  globalStatus: 404

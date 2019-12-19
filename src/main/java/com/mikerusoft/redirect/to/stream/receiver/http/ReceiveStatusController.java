@@ -3,15 +3,14 @@ package com.mikerusoft.redirect.to.stream.receiver.http;
 import com.google.common.cache.*;
 import com.mikerusoft.redirect.to.stream.model.BasicRequestWrapper;
 import com.mikerusoft.redirect.to.stream.services.RedirectService;
-import io.micronaut.context.annotation.Value;
+import com.mikerusoft.redirect.to.stream.utils.UrlReceiverProperties;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.HttpStatus;
-import io.micronaut.http.annotation.Body;
-import io.micronaut.http.annotation.Controller;
-import io.micronaut.http.annotation.Get;
-import io.micronaut.http.annotation.Post;
+import io.micronaut.http.annotation.*;
 import io.reactivex.FlowableOnSubscribe;
+import lombok.Builder;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
@@ -30,10 +29,12 @@ public class ReceiveStatusController {
     private UrlCalculationCache<HttpResponse> responser;
     private RedirectService<BasicRequestWrapper, FlowableOnSubscribe<BasicRequestWrapper>> service;
 
-    public ReceiveStatusController(RedirectService<BasicRequestWrapper, FlowableOnSubscribe<BasicRequestWrapper>> service,
-                                   @Value("${url.inactive.expire.sec:300}") int urlExpiration) {
+    private GlobalParams params;
+
+    public ReceiveStatusController(RedirectService<BasicRequestWrapper, FlowableOnSubscribe<BasicRequestWrapper>> service, UrlReceiverProperties props) {
         this.service = service;
-        this.responser = new UrlCalculationCache<>(urlExpiration);
+        this.responser = new UrlCalculationCache<>(props.getInactiveUrlExpireSec());
+        this.params = GlobalParams.builder().globalStatus(props.getGlobalStatus()).globalFreq(props.getGlobalFrequencyCount()).build();
     }
 
     @Get("/status/{status}/freq/{freq}/{/get:.*}")
@@ -48,6 +49,34 @@ public class ReceiveStatusController {
         String uri = request.getUri().toString();
         service.emit(extractRequest(request, body));
         return responser.getValue(uri, freq, HttpResponse::ok, () -> HttpResponse.status(HttpStatus.valueOf(status)));
+    }
+
+    @Post("/status/global/{/post:.*}")
+    public HttpResponse globalStatusOnlyPost(HttpRequest<?> request, Optional<String> post, @Body String body) {
+        String uri = request.getUri().toString();
+        service.emit(extractRequest(request, body));
+        return responser.getValue(uri, params.getGlobalFreq(), HttpResponse::ok, () -> HttpResponse.status(HttpStatus.valueOf(params.getGlobalStatus())));
+    }
+
+    @Get("/status/global/{/get:.*}")
+    public HttpResponse globalStatusOnlyGet(HttpRequest<?> request, Optional<String> get) {
+        String uri = request.getUri().toString();
+        service.emit(extractRequest(request, null));
+        return responser.getValue(uri, params.getGlobalFreq(), HttpResponse::ok, () -> HttpResponse.status(HttpStatus.valueOf(params.getGlobalStatus())));
+    }
+
+    @Get("/global/change/status/{status}/freq/{freq}")
+    public HttpResponse changeGlobal(@PathVariable("status") int status, @PathVariable("freq") int freq) {
+        this.params = this.params.toBuilder().globalFreq(freq).globalStatus(status).build();
+        return HttpResponse.ok();
+    }
+
+    @Data
+    @lombok.Value
+    @Builder(toBuilder = true)
+    private static class GlobalParams {
+        private int globalStatus;
+        private int globalFreq;
     }
 
     public static class UrlCalculationCache<V> {

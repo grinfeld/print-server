@@ -19,7 +19,6 @@ public class HttpReceiverController {
 
     public HttpReceiverController(RedirectService<BasicRequestWrapper, FlowableOnSubscribe<BasicRequestWrapper>> service) {
         this.service = service;
-
     }
 
     @Get("/{/get:.*}") // kombina - I didn't find the better way to give only prefix to receive all sub URIs
