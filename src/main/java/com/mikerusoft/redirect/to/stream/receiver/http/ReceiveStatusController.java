@@ -33,6 +33,8 @@ public class ReceiveStatusController {
 
     public ReceiveStatusController(RedirectService<BasicRequestWrapper, FlowableOnSubscribe<BasicRequestWrapper>> service, UrlReceiverProperties props) {
         this.service = service;
+        if (props.getInactiveUrlExpireSec() <= 0)
+            throw new IllegalArgumentException("Inactive urls expiration should be greater than 0");
         this.responser = new UrlCalculationCache<>(props.getInactiveUrlExpireSec());
         this.params = GlobalParams.builder().globalStatus(props.getGlobalStatus()).globalFreq(props.getGlobalFrequencyCount()).build();
     }

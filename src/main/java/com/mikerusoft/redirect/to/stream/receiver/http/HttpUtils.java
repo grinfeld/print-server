@@ -5,6 +5,7 @@ import io.micronaut.http.HttpHeaders;
 import io.micronaut.http.HttpParameters;
 import io.micronaut.http.HttpRequest;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -27,8 +28,12 @@ public class HttpUtils {
     }
 
     public static Map<String, String> extractCookies(HttpRequest<?> request) {
-        return StreamSupport.stream(request.getCookies().spliterator(), false)
-            .collect(Collectors.toMap(Map.Entry::getKey, e -> String.valueOf(e.getValue()), (k1, k2) -> k1));
+        try {
+            return StreamSupport.stream(request.getCookies().spliterator(), false)
+                    .collect(Collectors.toMap(Map.Entry::getKey, e -> String.valueOf(e.getValue()), (k1, k2) -> k1));
+        } catch (UnsupportedOperationException ignore) {}
+        // since NettyHttpClient implements HttpRequest with throwing UnsupportedOperationException when calling getCookies() - add this try-catch
+        return new HashMap<>(0);
     }
 
     public static Map<String, List<String>> extractHeaders(HttpHeaders httpHeaders) {

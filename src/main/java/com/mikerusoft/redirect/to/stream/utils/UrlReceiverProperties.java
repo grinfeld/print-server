@@ -1,18 +1,35 @@
 package com.mikerusoft.redirect.to.stream.utils;
 
 import io.micronaut.context.annotation.ConfigurationProperties;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@Builder(toBuilder = true, builderClassName = "Builder")
 @ConfigurationProperties("receiver")
-@NoArgsConstructor
-@AllArgsConstructor
+// I can't use lombok here, since micronaut, seems, scans class before lombok generates getters and setters
 public class UrlReceiverProperties {
     private int inactiveUrlExpireSec;
     private int globalFrequencyCount;
     private int globalStatus;
+
+    public int getInactiveUrlExpireSec() {
+        return inactiveUrlExpireSec;
+    }
+
+    public void setInactiveUrlExpireSec(int inactiveUrlExpireSec) {
+        this.inactiveUrlExpireSec = inactiveUrlExpireSec;
+    }
+
+    public int getGlobalFrequencyCount() {
+        return globalFrequencyCount;
+    }
+
+    public void setGlobalFrequencyCount(int globalFrequencyCount) {
+        this.globalFrequencyCount = globalFrequencyCount;
+    }
+
+    public int getGlobalStatus() {
+        return globalStatus;
+    }
+
+    public void setGlobalStatus(int globalStatus) {
+        this.globalStatus = globalStatus;
+    }
 }

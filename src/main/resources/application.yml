@@ -9,6 +9,6 @@ app:
     size: ${appSubscibers:5}
 
 receiver:
-  inactiveUrlExpireSec: 300
-  globalFrequencyCount: 10
-  globalStatus: 404
+  inactive-url-expire-sec: 300
+  global-frequency-count: 10
+  global-status: 404
