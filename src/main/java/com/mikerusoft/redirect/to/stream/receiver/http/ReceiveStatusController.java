@@ -40,7 +40,7 @@ public class ReceiveStatusController {
     }
 
     @Get("/status/{status}/freq/{freq}/{/get:.*}")
-    public HttpResponse statusOnlyGet(HttpRequest<?> request, int status, int freq, Optional<String> get) {
+    public HttpResponse statusOnlyGet(HttpRequest<?> request, final int status, int freq, Optional<String> get) {
         String uri = request.getUri().toString();
         service.emit(extractRequest(request, null));
         return responser.getValue(uri, freq, HttpResponse::ok, () -> HttpResponse.status(HttpStatus.valueOf(status)));
