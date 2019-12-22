@@ -27,7 +27,6 @@ Service (or some pipeline that ends with sending HttpRequest) we want to test sh
 * /receive/post/{any uri}
 * /receive/put/{any uri}
 
-
 ### Test different HttpStatuses
 
 There are 2 options: 
@@ -37,14 +36,17 @@ There are 2 options:
 
 #### Global
 
-We defined 2 parameters: status (i.e. different from 200) and change frequency counter (a.k.k.a how often we return status)
+We defined 2 parameters: 
+status (i.e. different from 200) and change frequency counter (a.k.k.a how often we return status)
 
 Default values are: for status = 404 and freqCounter = 10 - means every 10th request server returns status 404
+
 Initial values defined in application.yml file (but it could be changed on the fly - see later) 
 
 Supported GET and POST
 
 End Point to send requests to:  */status/global/{any uri suffix}*
+
 End Point to change default global:  */global/change/status/{status}/freq/{freq}* - change of this values will affect anyone who uses end point above
 
 #### Per Endpoint
