@@ -12,7 +12,10 @@ import io.micronaut.http.*;
 import io.micronaut.test.annotation.MicronautTest;
 import io.micronaut.test.annotation.MockBean;
 import io.reactivex.FlowableOnSubscribe;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import javax.inject.Inject;
 
@@ -49,18 +52,27 @@ class ReceiveStatusControllerTest {
         return service;
     }
 
-    @Test
-    void globalStatus_withGlobalStatusIs404AndCHangeFrequencyIs2_when2requests_expected1stIs200And2ndIs404() throws Exception {
-        HttpResponse<?> first = controller.globalStatusOnlyGet(HttpRequest.create(HttpMethod.valueOf("GET"), "/status/global/first"), Optional.empty());
-        HttpResponse<?> second = controller.globalStatusOnlyGet(HttpRequest.create(HttpMethod.valueOf("GET"), "/status/global/first"), Optional.empty());
+    @AfterEach
+    void cleanCache() {
+        controller.clearCache();
+    }
+
+    @ParameterizedTest
+    @CsvSource({"GET", "POST"})
+    void globalStatus_withGlobalStatusIs404AndCHangeFrequencyIs2_when2requests_expected1stIs200And2ndIs404(String methodName) throws Exception {
+        HttpMethod method = HttpMethod.valueOf(methodName);
+        HttpResponse<?> first = controller.globalStatusOnly(HttpRequest.create(method, "/status/global/first"), Optional.empty());
+        HttpResponse<?> second = controller.globalStatusOnly(HttpRequest.create(method, "/status/global/first"), Optional.empty());
 
         assertThat(first).isNotNull().extracting(resp -> resp.getStatus().getCode()).isEqualTo(200);
         assertThat(second).isNotNull().extracting(resp -> resp.getStatus().getCode()).isEqualTo(404);
     }
 
-    @Test
-    void statusFreq_whenMultipleThreadsSendSimultaneously_expectedExactResult() throws Exception {
-        Callable<HttpResponse<?>> requestFunction = createStatusRequestSupplier(500, 3);
+    @ParameterizedTest
+    @CsvSource({"GET", "POST"})
+    void statusFreq_whenMultipleThreadsSendSimultaneously_expectedExactResult(String methodName) throws Exception {
+        HttpMethod method = HttpMethod.valueOf(methodName);
+        Callable<HttpResponse<?>> requestFunction = createStatusRequestSupplier(method, 500, 3);
         var executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(16));
 
         List<ListenableFuture<HttpResponse<?>>> resultFutures = runRequestsInExecutor(executor, 16, requestFunction);
@@ -71,10 +83,12 @@ class ReceiveStatusControllerTest {
                 .hasEntrySatisfying(500, stat -> assertThat(stat).hasSize(5));
     }
 
-    @Test
-    void statusFreq_whenMultipleThreadsSendSimultaneouslyToDifferentEndPoints_expectedExactResult() throws Exception {
-        Callable<HttpResponse<?>> requestFunctionWith500 = createStatusRequestSupplier(500, 3);
-        Callable<HttpResponse<?>> requestFunctionWith404 = createStatusRequestSupplier(404, 3);
+    @ParameterizedTest
+    @CsvSource({"GET", "POST"})
+    void statusFreq_whenMultipleThreadsSendSimultaneouslyToDifferentEndPoints_expectedExactResult(String methodName) throws Exception {
+        HttpMethod method = HttpMethod.valueOf(methodName);
+        Callable<HttpResponse<?>> requestFunctionWith500 = createStatusRequestSupplier(method, 500, 3);
+        Callable<HttpResponse<?>> requestFunctionWith404 = createStatusRequestSupplier(method, 404, 3);
         var executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(20));
 
         List<ListenableFuture<HttpResponse<?>>> resultFutures = runRequestsInExecutor(executor, 16, requestFunctionWith500, requestFunctionWith404);
@@ -86,9 +100,12 @@ class ReceiveStatusControllerTest {
                 .hasEntrySatisfying(500, stat -> assertThat(stat).hasSize(5));
     }
 
-    private Callable<HttpResponse<?>> createStatusRequestSupplier(int status, int freqCount) {
-        MutableHttpRequest<?> request = HttpRequest.create(HttpMethod.valueOf("GET"), "/status/" + status + "/freq/" + freqCount + "/blabla");
-        return () -> controller.statusOnlyGet(request, status, freqCount, Optional.empty());
+    private Callable<HttpResponse<?>> createStatusRequestSupplier(HttpMethod method, int status, int freqCount) {
+        MutableHttpRequest<?> request = HttpRequest.create(method, "/status/" + status + "/freq/" + freqCount + "/blabla");
+        return () -> method == HttpMethod.GET ?
+                controller.statusOnly(request, status, freqCount, Optional.empty()) :
+                controller.statusOnly(request, status, freqCount, Optional.empty(), "stam")
+            ;
     }
 
     private static Map<Integer, List<Integer>> waitForResults(List<ListenableFuture<HttpResponse<?>>> resultFutures) throws Exception {
