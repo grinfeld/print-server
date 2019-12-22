@@ -8,10 +8,7 @@ import com.mikerusoft.redirect.to.stream.model.BasicRequestWrapper;
 import com.mikerusoft.redirect.to.stream.services.RedirectService;
 
 import io.micronaut.context.annotation.Primary;
-import io.micronaut.http.HttpMethod;
-import io.micronaut.http.HttpRequest;
-import io.micronaut.http.HttpResponse;
-import io.micronaut.http.HttpStatus;
+import io.micronaut.http.*;
 import io.micronaut.test.annotation.MicronautTest;
 import io.micronaut.test.annotation.MockBean;
 import io.reactivex.FlowableOnSubscribe;
@@ -27,6 +24,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -62,15 +60,43 @@ class ReceiveStatusControllerTest {
 
     @Test
     void statusFreq_whenMultipleThreadsSendSimultaneously_expectedExactResult() throws Exception {
-        Callable<HttpResponse<?>> supp = () -> controller.statusOnlyGet(HttpRequest.create(HttpMethod.valueOf("GET"), "/status/500/freq/3/blabla"), 500, 3, Optional.empty());
-        ListeningExecutorService executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(16));
-        List<ListenableFuture<HttpResponse<?>>> collect = IntStream.range(0, 16).mapToObj(i -> executor.submit(supp)).collect(Collectors.toList());
+        Callable<HttpResponse<?>> requestFunction = createStatusRequestSupplier(500, 3);
+        var executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(16));
 
-        Map<Integer, List<Integer>> statuses = Futures.allAsList(collect).get().stream()
-                .map(HttpResponse::getStatus).map(HttpStatus::getCode).collect(Collectors.groupingBy(Function.identity()));
+        List<ListenableFuture<HttpResponse<?>>> resultFutures = runRequestsInExecutor(executor, 16, requestFunction);
+        Map<Integer, List<Integer>> statuses = waitForResults(resultFutures);
 
         assertThat(statuses).hasSize(2).containsOnlyKeys(200, 500)
                 .hasEntrySatisfying(200, stat -> assertThat(stat).hasSize(11))
                 .hasEntrySatisfying(500, stat -> assertThat(stat).hasSize(5));
+    }
+
+    @Test
+    void statusFreq_whenMultipleThreadsSendSimultaneouslyToDifferentEndPoints_expectedExactResult() throws Exception {
+        Callable<HttpResponse<?>> requestFunctionWith500 = createStatusRequestSupplier(500, 3);
+        Callable<HttpResponse<?>> requestFunctionWith404 = createStatusRequestSupplier(404, 3);
+        var executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(20));
+
+        List<ListenableFuture<HttpResponse<?>>> resultFutures = runRequestsInExecutor(executor, 16, requestFunctionWith500, requestFunctionWith404);
+        Map<Integer, List<Integer>> statuses = waitForResults(resultFutures);
+
+        assertThat(statuses).hasSize(3).containsOnlyKeys(200, 500, 404)
+                .hasEntrySatisfying(200, stat -> assertThat(stat).hasSize(22))
+                .hasEntrySatisfying(404, stat -> assertThat(stat).hasSize(5))
+                .hasEntrySatisfying(500, stat -> assertThat(stat).hasSize(5));
+    }
+
+    private Callable<HttpResponse<?>> createStatusRequestSupplier(int status, int freqCount) {
+        MutableHttpRequest<?> request = HttpRequest.create(HttpMethod.valueOf("GET"), "/status/" + status + "/freq/" + freqCount + "/blabla");
+        return () -> controller.statusOnlyGet(request, status, freqCount, Optional.empty());
+    }
+
+    private static Map<Integer, List<Integer>> waitForResults(List<ListenableFuture<HttpResponse<?>>> resultFutures) throws Exception {
+        return Futures.allAsList(resultFutures).get().stream()
+                .map(HttpResponse::getStatus).map(HttpStatus::getCode).collect(Collectors.groupingBy(Function.identity()));
+    }
+
+    private static List<ListenableFuture<HttpResponse<?>>> runRequestsInExecutor(ListeningExecutorService executor, int numOfRequests, Callable<HttpResponse<?>>...supp) {
+        return Stream.of(supp).flatMap(supplier -> IntStream.range(0, numOfRequests).mapToObj(i -> executor.submit(supplier))).collect(Collectors.toList());
     }
 }

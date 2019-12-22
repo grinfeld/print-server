@@ -81,7 +81,7 @@ public class ReceiveStatusController {
         private int globalFreq;
     }
 
-    public static class UrlCalculationCache<V> {
+    private static class UrlCalculationCache<V> {
         private Map<String, AtomicInteger> statusCache;
         private Cache<String, Boolean> keyCache;
 
