@@ -89,7 +89,7 @@ public class ReceiveStatusController {
         UrlCalculationCache(int urlExpirationSec) {
             this.statusCache = new ConcurrentHashMap<>();
             // need cache with expiration, to remove not used URL's counters
-            // However, store "useless" data (cache with useless boolean value), still better then implement LRU by myself
+            // However, storing "useless" data (cache with useless boolean value), still better then implementing LRU by myself
             this.keyCache = CacheBuilder.newBuilder().expireAfterAccess(urlExpirationSec, TimeUnit.SECONDS)
                 .removalListener(new RemovalListener<String, Boolean>() {
                     @Override
