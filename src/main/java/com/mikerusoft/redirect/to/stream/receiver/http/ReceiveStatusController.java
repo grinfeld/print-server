@@ -1,8 +1,9 @@
 package com.mikerusoft.redirect.to.stream.receiver.http;
 
-import com.google.common.cache.*;
 import com.mikerusoft.redirect.to.stream.model.BasicRequestWrapper;
 import com.mikerusoft.redirect.to.stream.services.RedirectService;
+import com.mikerusoft.redirect.to.stream.services.UrlCalculation;
+import com.mikerusoft.redirect.to.stream.services.UrlCalculationByStateCache;
 import com.mikerusoft.redirect.to.stream.utils.UrlReceiverProperties;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
@@ -13,12 +14,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
 
 import static com.mikerusoft.redirect.to.stream.receiver.http.HttpUtils.extractRequest;
 
@@ -26,7 +22,7 @@ import static com.mikerusoft.redirect.to.stream.receiver.http.HttpUtils.extractR
 @Slf4j
 public class ReceiveStatusController {
 
-    private UrlCalculationCache<HttpResponse> responser;
+    private UrlCalculation responser;
     private RedirectService<BasicRequestWrapper, FlowableOnSubscribe<BasicRequestWrapper>> service;
 
     private GlobalParams params;
@@ -35,7 +31,7 @@ public class ReceiveStatusController {
         this.service = service;
         if (props.getInactiveUrlExpireSec() <= 0)
             throw new IllegalArgumentException("Inactive urls expiration should be greater than 0");
-        this.responser = new UrlCalculationCache<>(props.getInactiveUrlExpireSec());
+        this.responser = new UrlCalculationByStateCache(props.getInactiveUrlExpireSec());
         this.params = GlobalParams.builder().globalStatus(props.getGlobalStatus()).globalFreq(props.getGlobalFrequencyCount()).build();
     }
 
@@ -80,45 +76,6 @@ public class ReceiveStatusController {
     // for tests only
     void clearCache() {
         responser.clear();
-    }
-
-    private static class UrlCalculationCache<V> {
-        private Map<String, AtomicInteger> statusCache;
-        private Cache<String, Boolean> keyCache;
-
-        UrlCalculationCache(int urlExpirationSec) {
-            this.statusCache = new ConcurrentHashMap<>();
-            // need cache with expiration, to remove not used URL's counters
-            // However, storing "useless" data (cache with useless boolean value), still better then implementing LRU by myself
-            this.keyCache = CacheBuilder.newBuilder().expireAfterAccess(urlExpirationSec, TimeUnit.SECONDS)
-                .removalListener(new RemovalListener<String, Boolean>() {
-                    @Override
-                    public void onRemoval(RemovalNotification<String, Boolean> notification) {
-                        RemovalCause cause = notification.getCause();
-                        if (cause == RemovalCause.EXPIRED)
-                            statusCache.remove(notification.getKey());
-                    }
-                })
-                .build(new CacheLoader<>() { @Override public Boolean load(String key) throws Exception { return Boolean.TRUE; }});
-        }
-
-        V getValue(String key, int freq, Supplier<V> defaultAction, Supplier<V> exceptionalAction) {
-            if (freq <= 1)
-                return defaultAction.get();
-
-            AtomicInteger atomicInteger = statusCache.get(key);
-            if (atomicInteger == null) {
-                atomicInteger = statusCache.computeIfAbsent(key, k -> new AtomicInteger(0));
-            }
-            int allCounter = atomicInteger.updateAndGet(current -> current >= Integer.MAX_VALUE - 1 ? 0 : current + 1);
-            keyCache.put(key, Boolean.TRUE);
-            return allCounter % freq == 0 ? exceptionalAction.get() : defaultAction.get();
-        }
-
-        void clear() {
-            keyCache.cleanUp();
-            this.statusCache = new ConcurrentHashMap<>();
-        }
     }
 
 }
