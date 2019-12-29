@@ -12,3 +12,5 @@ receiver:
   inactive-url-expire-sec: 300
   global-frequency-count: 10
   global-status: 404
+  global-delay-ms: 500
+  max-size-of-delayed-requests: 1000
